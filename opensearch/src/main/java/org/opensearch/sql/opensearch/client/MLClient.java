@@ -1,6 +1,6 @@
 package org.opensearch.sql.opensearch.client;
 
-import org.opensearch.client.node.NodeClient;
+import org.opensearch.client.support.AbstractClient;
 import org.opensearch.ml.client.MachineLearningNodeClient;
 
 public class MLClient {
@@ -14,7 +14,7 @@ public class MLClient {
    * @param nodeClient node client
    * @return machine learning client
    */
-  public static MachineLearningNodeClient getMLClient(NodeClient nodeClient) {
+  public static MachineLearningNodeClient getMLClient(AbstractClient nodeClient) {
     if (INSTANCE == null) {
       INSTANCE = new MachineLearningNodeClient(nodeClient);
     }

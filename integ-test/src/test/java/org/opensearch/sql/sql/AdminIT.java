@@ -66,7 +66,7 @@ public class AdminIT extends SQLIntegTestCase {
   }
 
   private void addAlias(String index, String alias) throws IOException {
-    client().performRequest(new Request("PUT", StringUtils.format("%s/_alias/%s", index, alias)));
+    client().performRequest(new Request("PUT", StringUtils.format("/%s/_alias/%s", index, alias)));
   }
 
   private String loadFromFile(String filename) throws Exception {

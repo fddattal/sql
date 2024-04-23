@@ -12,10 +12,18 @@ import static org.opensearch.sql.util.MatcherUtils.verifySchema;
 import static org.opensearch.sql.util.TestUtils.createHiddenIndexByRestClient;
 import static org.opensearch.sql.util.TestUtils.performRequest;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Callable;
+
+import lombok.SneakyThrows;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
+import org.opensearch.client.ResponseException;
 import org.opensearch.sql.legacy.SQLIntegTestCase;
 
 /** Integration tests for identifiers including index and field name symbol. */
@@ -43,7 +51,10 @@ public class IdentifierIT extends SQLIntegTestCase {
 
   @Test
   public void testSpecialFieldName() throws IOException {
-    new Index("test").addDoc("{\"@timestamp\": 10, \"dimensions:major_version\": 30}");
+    swallowResourceAlreadyExists(null, () -> {
+      new Index("test").addDoc("{\"@timestamp\": 10, \"dimensions:major_version\": 30}", "1");
+      return null;
+    });
     final JSONObject result =
         new JSONObject(
             executeQuery("SELECT @timestamp, " + "`dimensions:major_version` FROM test", "jdbc"));
@@ -64,7 +75,11 @@ public class IdentifierIT extends SQLIntegTestCase {
 
   @Test
   public void testDoubleUnderscoreIdentifierTest() throws IOException {
-    new Index("test.twounderscores").addDoc("{\"__age\": 30}");
+    swallowResourceAlreadyExists(null, () -> {
+      new Index("test.twounderscores").addDoc("{\"__age\": 30}", "1");
+      return null;
+    });
+
     final JSONObject result =
         new JSONObject(executeQuery("SELECT __age FROM test.twounderscores", "jdbc"));
 
@@ -77,7 +92,11 @@ public class IdentifierIT extends SQLIntegTestCase {
     // create an index, but the contents doesn't matter
     String id = "12345";
     String index = "test.metafields";
-    new Index(index).addDoc("{\"age\": 30}", id);
+
+    swallowResourceAlreadyExists(null, () -> {
+      new Index(index).addDoc("{\"age\": 30}", id);
+      return null;
+    });
 
     // Execute using field metadata values
     final JSONObject result =
@@ -140,6 +159,7 @@ public class IdentifierIT extends SQLIntegTestCase {
     // create an index, but the contents doesn't really matter
     String index = "test.routing_filter";
     String mapping = "{\"_routing\": {\"required\": true }}";
+
     new Index(index, mapping)
         .addDocWithShardId("{\"age\": 31}", "test1", "test1")
         .addDocWithShardId("{\"age\": 32}", "test2", "test2")
@@ -180,7 +200,11 @@ public class IdentifierIT extends SQLIntegTestCase {
     // create an index, but the contents doesn't matter
     String id = "99999";
     String index = "test.aliasmetafields";
-    new Index(index).addDoc("{\"age\": 30}", id);
+
+    swallowResourceAlreadyExists(null, () -> {
+      new Index(index).addDoc("{\"age\": 30}", id);
+      return null;
+    });
 
     // Execute using field metadata values
     final JSONObject result =
@@ -207,9 +231,12 @@ public class IdentifierIT extends SQLIntegTestCase {
   }
 
   private void createIndexWithOneDoc(String... indexNames) throws IOException {
-    for (String indexName : indexNames) {
-      new Index(indexName).addDoc("{\"age\": 30}");
-    }
+    swallowResourceAlreadyExists(null, () -> {
+      for (String indexName : indexNames) {
+        new Index(indexName).addDoc("{\"age\": 30}", "1");
+      }
+      return null;
+    });
   }
 
   private void queryAndAssertTheDoc(String sql) {
@@ -241,12 +268,6 @@ public class IdentifierIT extends SQLIntegTestCase {
       executeRequest(new Request("PUT", "/" + indexName));
     }
 
-    void addDoc(String doc) {
-      Request indexDoc = new Request("POST", String.format("/%s/_doc?refresh=true", indexName));
-      indexDoc.setJsonEntity(doc);
-      performRequest(client(), indexDoc);
-    }
-
     public Index addDoc(String doc, String id) {
       Request indexDoc =
           new Request("POST", String.format("/%s/_doc/%s?refresh=true", indexName, id));
@@ -262,6 +283,28 @@ public class IdentifierIT extends SQLIntegTestCase {
       indexDoc.setJsonEntity(doc);
       performRequest(client(), indexDoc);
       return this;
+    }
+  }
+
+  @SneakyThrows
+  private static <T> T swallowResourceAlreadyExists(T defaultIfError, Callable<T> callable) {
+    try {
+      return callable.call();
+    } catch (ResponseException e) {
+      ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+      PrintStream stream = new PrintStream(byteStream);
+      e.printStackTrace(stream);
+      stream.flush();
+      byteStream.flush();
+      String errorAsString = byteStream.toString(StandardCharsets.UTF_8);
+      if (errorAsString.contains("resource_already_exists_exception")) {
+        // swallow the exception
+        System.out.println("Swallowing resource already exists exception: " + e);
+        return defaultIfError;
+
+      } else {
+        throw e;
+      }
     }
   }
 }

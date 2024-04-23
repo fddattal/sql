@@ -18,12 +18,16 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
 import org.opensearch.action.index.IndexRequest;
@@ -87,6 +91,9 @@ public class TestUtils {
     }
   }
 
+  // since we are no longer deleting indices between tests, this helps to speed up the tests
+  private static final Set<String> LOADED_INDICES = ConcurrentHashMap.newKeySet();
+
   /**
    * Load test data set by REST client.
    *
@@ -97,10 +104,54 @@ public class TestUtils {
    */
   public static void loadDataByRestClient(
       RestClient client, String indexName, String dataSetFilePath) throws IOException {
+
+    if (LOADED_INDICES.contains(indexName)) return;
+
     Path path = Paths.get(getResourceFilePath(dataSetFilePath));
-    Request request = new Request("POST", "/" + indexName + "/_bulk?refresh=true");
+    //Request request = new Request("POST", "/" + indexName + "/_bulk?refresh=true");
+    // disable refresh
+    Request request = new Request("POST", "/" + indexName + "/_bulk");
     request.setJsonEntity(new String(Files.readAllBytes(path)));
-    performRequest(client, request);
+    Response response = performRequest(client, request);
+    Assert.assertTrue(
+            "Unexpected status code from bulk: " + response.getStatusLine(),
+            response.getStatusLine().getStatusCode() < 300 &&
+            response.getStatusLine().getStatusCode() >= 200);
+    JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
+    Assert.assertFalse(
+            "Response had errors: " + jsonObject,
+            jsonObject.getBoolean("errors")
+    );
+
+    // TODO: polling here until we see all docs are returned in search
+    List<String> dataSetLines = Files.readAllLines(path)
+            .stream()
+            .map(String::trim)
+            .filter(Predicate.not(String::isEmpty))
+            .collect(Collectors.toList());
+
+    Assert.assertTrue(
+            "There was an uneven number of entries in the bulk request: " + dataSetLines,
+            dataSetLines.size() % 2 == 0);
+
+    int expectedDocs = dataSetLines.size() / 2;
+
+    Instant end = Instant.now().plus(Duration.ofMinutes(5));
+    while (Instant.now().isBefore(end)) {
+      Request matchAllRequest = new Request("GET", "/" + indexName + "/_search");
+      Response matchAllResponse = performRequest(client, matchAllRequest);
+      JSONObject matchAllResponseJson = new JSONObject(EntityUtils.toString(matchAllResponse.getEntity()));
+      int total = matchAllResponseJson.getJSONObject("hits").getJSONObject("total").getNumber("value").intValue();
+      if (total != expectedDocs) {
+        System.out.printf("Waiting for more time. Found %d docs, Need %d docs%n", total, expectedDocs);
+        try { Thread.sleep(5_000); } catch (Exception e) { throw new RuntimeException(e); }
+      } else {
+        LOADED_INDICES.add(indexName);
+        return;
+      }
+    }
+
+    Assert.fail("Failed to load all docs after polling for " + indexName);
   }
 
   /**

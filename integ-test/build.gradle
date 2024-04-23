@@ -693,7 +693,12 @@ task bwcTestSuite(type: StandaloneRestIntegTestTask) {
 def opensearch_tmp_dir = rootProject.file('build/private/es_tmp').absoluteFile
 opensearch_tmp_dir.mkdirs()
 
+task integTestJar(type: org.gradle.jvm.tasks.Jar) {
+    from(sourceSets.test.output)
+}
+
 task integTestRemote(type: RestIntegTestTask) {
+
     testLogging {
         events "passed", "skipped", "failed"
     }
@@ -714,6 +719,10 @@ task integTestRemote(type: RestIntegTestTask) {
         filter {
             excludeTestsMatching "org.opensearch.sql.bwc.*IT"
         }
+    }
+
+    filter {
+        includeTestsMatching 'org.opensearch.sql.**CloudNativeIT'
     }
 
     // Exclude the same tests that are excluded for integTest

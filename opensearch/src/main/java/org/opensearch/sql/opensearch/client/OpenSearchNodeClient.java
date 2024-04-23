@@ -22,6 +22,7 @@ import org.opensearch.action.admin.indices.get.GetIndexResponse;
 import org.opensearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.opensearch.action.admin.indices.settings.get.GetSettingsResponse;
 import org.opensearch.client.node.NodeClient;
+import org.opensearch.client.support.AbstractClient;
 import org.opensearch.cluster.metadata.AliasMetadata;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.index.IndexNotFoundException;
@@ -37,10 +38,10 @@ public class OpenSearchNodeClient implements OpenSearchClient {
       (anyIndex -> (anyField -> true));
 
   /** Node client provided by OpenSearch container. */
-  private final NodeClient client;
+  private final AbstractClient client;
 
   /** Constructor of OpenSearchNodeClient. */
-  public OpenSearchNodeClient(NodeClient client) {
+  public OpenSearchNodeClient(AbstractClient client) {
     this.client = client;
   }
 

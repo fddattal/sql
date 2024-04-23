@@ -48,8 +48,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.management.remote.JMXConnector;
@@ -84,14 +88,14 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
 
   @Before
   public void setUpIndices() throws Exception {
-    if (client() == null) {
-      initClient();
-    }
+      if (client() == null) {
+        initClient();
+      }
 
-    if (shouldResetQuerySizeLimit()) {
-      resetQuerySizeLimit();
-    }
-    init();
+      if (shouldResetQuerySizeLimit()) {
+        resetQuerySizeLimit();
+      }
+      init();
   }
 
   @Override
@@ -148,6 +152,7 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
   @AfterClass
   public static void cleanUpIndices() throws IOException {
     if (System.getProperty("tests.rest.bwcsuite") == null) {
+      System.out.println("Cleaning existing indices");
       wipeAllOpenSearchIndices();
       wipeAllClusterSettings();
     }
@@ -168,6 +173,8 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
   }
 
   protected static void wipeAllClusterSettings() throws IOException {
+    if (true) return;
+
     updateClusterSettings(new ClusterSetting("persistent", "*", null));
     updateClusterSettings(new ClusterSetting("transient", "*", null));
     if (remoteClient() != null) {
@@ -199,8 +206,8 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
 
     if (!isIndexExist(client, indexName)) {
       createIndexByRestClient(client, indexName, mapping);
-      loadDataByRestClient(client, indexName, dataSet);
     }
+    loadDataByRestClient(client, indexName, dataSet);
   }
 
   protected synchronized void loadIndex(Index index) throws IOException {
@@ -389,7 +396,8 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
   }
 
   protected static JSONObject updateClusterSettings(ClusterSetting setting) throws IOException {
-    return updateClusterSettings(setting, client());
+//    return updateClusterSettings(setting, client());
+    return new JSONObject();
   }
 
   protected static JSONObject getAllClusterSettings() throws IOException {

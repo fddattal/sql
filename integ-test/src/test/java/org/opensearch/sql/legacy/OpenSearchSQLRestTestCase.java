@@ -6,10 +6,16 @@
 package org.opensearch.sql.legacy;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.util.*;
+
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -18,22 +24,24 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.nio.conn.ssl.SSLIOSessionStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
-import org.opensearch.client.Request;
-import org.opensearch.client.Response;
-import org.opensearch.client.RestClient;
-import org.opensearch.client.RestClientBuilder;
+import org.opensearch.client.*;
+import org.opensearch.common.io.PathUtils;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.util.concurrent.ThreadContext;
 import org.opensearch.common.util.io.IOUtils;
 import org.opensearch.test.rest.OpenSearchRestTestCase;
+
+import javax.net.ssl.SSLContext;
 
 /**
  * OpenSearch SQL integration test base class to support both security disabled and enabled
@@ -67,6 +75,28 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
    * actions like remove all indexes after the test completes
    */
   private static RestClient remoteAdminClient;
+
+  private static final Object LOCK = new Object();
+
+  public OpenSearchSQLRestTestCase() {
+    synchronized (LOCK) {
+      if (remoteAdminClient == null && remoteClient == null) {
+        try {
+          remoteClient = remoteAdminClient = initClient("docker-cluster");
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }
+    }
+  }
+
+  protected static RestClient client() {
+    return Objects.requireNonNull(remoteClient);
+  }
+
+  protected static RestClient adminClient() {
+    return Objects.requireNonNull(remoteAdminClient);
+  }
 
   protected boolean isHttps() {
     boolean isHttps =
@@ -102,7 +132,7 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
   }
 
   protected RestClient buildClient(Settings settings, HttpHost[] hosts) throws IOException {
-    RestClientBuilder builder = RestClient.builder(hosts);
+    JunoRestClientBuilder builder = JunoRestClient.junoBuilder(hosts);
     if (isHttps()) {
       configureHttpsClient(builder, settings);
     } else {
@@ -136,15 +166,16 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
 
   /** Get a comma delimited list of [host:port] to which to send REST requests. */
   protected String getTestRestCluster(String clusterName) {
-    String cluster = System.getProperty("tests.rest." + clusterName + ".http_hosts");
-    if (cluster == null) {
-      throw new RuntimeException(
-          "Must specify [tests.rest."
-              + clusterName
-              + ".http_hosts] system property with a comma delimited list of [host:port] "
-              + "to which to send REST requests");
-    }
-    return cluster;
+//    String cluster = System.getProperty("tests.rest." + clusterName + ".http_hosts");
+//    if (cluster == null) {
+//      throw new RuntimeException(
+//          "Must specify [tests.rest."
+//              + clusterName
+//              + ".http_hosts] system property with a comma delimited list of [host:port] "
+//              + "to which to send REST requests");
+//    }
+//    return cluster;
+    return "localhost:9200";
   }
 
   /** Get a comma delimited list of [host:port] for connections between clusters. */
@@ -171,24 +202,27 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
   }
 
   protected static void wipeAllOpenSearchIndices() throws IOException {
-    wipeAllOpenSearchIndices(client());
-    if (remoteClient() != null) {
-      wipeAllOpenSearchIndices(remoteClient());
-    }
+    // TODO - temporarily disable to view metadata
+//    wipeAllOpenSearchIndices(client());
+//    if (remoteClient() != null) {
+//      wipeAllOpenSearchIndices(remoteClient());
+//    }
   }
 
   protected static void wipeAllOpenSearchIndices(RestClient client) throws IOException {
     // include all the indices, included hidden indices.
     // https://www.elastic.co/guide/en/elasticsearch/reference/current/cat-indices.html#cat-indices-api-query-params
     Response response =
-        client.performRequest(new Request("GET", "/_cat/indices?format=json&expand_wildcards=all"));
+//        client.performRequest(new Request("GET", "/_cat/indices?format=json&expand_wildcards=all"));
+        client.performRequest(new Request("GET", "/_cat/indices?format=json"));
     JSONArray jsonArray = new JSONArray(EntityUtils.toString(response.getEntity(), "UTF-8"));
     for (Object object : jsonArray) {
       JSONObject jsonObject = (JSONObject) object;
       String indexName = jsonObject.getString("index");
       try {
         // System index, mostly named .opensearch-xxx or .opendistro-xxx, are not allowed to delete
-        if (!indexName.startsWith(".opensearch") && !indexName.startsWith(".opendistro")) {
+        if (!indexName.startsWith(".opensearch") && !indexName.startsWith(".opendistro") && !indexName.startsWith("target_index")) {
+          System.out.println("Deleting index " + indexName);
           client.performRequest(new Request("DELETE", "/" + indexName));
         }
       } catch (Exception e) {
@@ -203,23 +237,69 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
    * Configure authentication and pass <b>builder</b> to superclass to configure other stuff.<br>
    * By default, auth is configure when <b>https</b> is set only.
    */
-  protected static void configureClient(RestClientBuilder builder, Settings settings)
+  protected static void configureClient(JunoRestClientBuilder builder, Settings settings)
       throws IOException {
     String userName = System.getProperty("user");
     String password = System.getProperty("password");
     if (userName != null && password != null) {
       builder.setHttpClientConfigCallback(
           httpClientBuilder -> {
+            JunoRestClient.configureHttpRequestHeaders(httpClientBuilder);
             BasicCredentialsProvider credentialsProvider = new BasicCredentialsProvider();
             credentialsProvider.setCredentials(
                 new AuthScope(null, -1), new UsernamePasswordCredentials(userName, password));
             return httpClientBuilder.setDefaultCredentialsProvider(credentialsProvider);
           });
     }
-    OpenSearchRestTestCase.configureClient(builder, settings);
+    openSearchRestTestCaseConfigureClient(builder, settings);
   }
 
-  protected static void configureHttpsClient(RestClientBuilder builder, Settings settings)
+  protected static void openSearchRestTestCaseConfigureClient(JunoRestClientBuilder builder, Settings settings) throws IOException {
+    String keystorePath = settings.get(TRUSTSTORE_PATH);
+    if (keystorePath != null) {
+      final String keystorePass = settings.get(TRUSTSTORE_PASSWORD);
+      if (keystorePass == null) {
+        throw new IllegalStateException(TRUSTSTORE_PATH + " is provided but not " + TRUSTSTORE_PASSWORD);
+      }
+      Path path = PathUtils.get(keystorePath);
+      if (!Files.exists(path)) {
+        throw new IllegalStateException(TRUSTSTORE_PATH + " is set but points to a non-existing file");
+      }
+      try {
+        final String keyStoreType = keystorePath.endsWith(".p12") ? "PKCS12" : "jks";
+        KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+        try (InputStream is = Files.newInputStream(path)) {
+          keyStore.load(is, keystorePass.toCharArray());
+        }
+        SSLContext sslcontext = SSLContexts.custom().loadTrustMaterial(keyStore, null).build();
+        SSLIOSessionStrategy sessionStrategy = new SSLIOSessionStrategy(sslcontext);
+        builder.setHttpClientConfigCallback(httpClientBuilder -> {
+          JunoRestClient.configureHttpRequestHeaders(httpClientBuilder);
+          return httpClientBuilder.setSSLStrategy(sessionStrategy);
+        });
+      } catch (KeyStoreException | NoSuchAlgorithmException | KeyManagementException | CertificateException e) {
+        throw new RuntimeException("Error setting up ssl", e);
+      }
+    }
+    Map<String, String> headers = ThreadContext.buildDefaultHeaders(settings);
+    Header[] defaultHeaders = new Header[headers.size()];
+    int i = 0;
+    for (Map.Entry<String, String> entry : headers.entrySet()) {
+      defaultHeaders[i++] = new BasicHeader(entry.getKey(), entry.getValue());
+    }
+    builder.setDefaultHeaders(defaultHeaders);
+    final String socketTimeoutString = settings.get(CLIENT_SOCKET_TIMEOUT);
+    final TimeValue socketTimeout = TimeValue.parseTimeValue(
+            socketTimeoutString == null ? "60s" : socketTimeoutString,
+            CLIENT_SOCKET_TIMEOUT
+    );
+    builder.setRequestConfigCallback(conf -> conf.setSocketTimeout(Math.toIntExact(socketTimeout.getMillis())));
+    if (settings.hasValue(CLIENT_PATH_PREFIX)) {
+      builder.setPathPrefix(settings.get(CLIENT_PATH_PREFIX));
+    }
+  }
+
+  protected static void configureHttpsClient(JunoRestClientBuilder builder, Settings settings)
       throws IOException {
     Map<String, String> headers = ThreadContext.buildDefaultHeaders(settings);
     Header[] defaultHeaders = new Header[headers.size()];
@@ -230,6 +310,7 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
     builder.setDefaultHeaders(defaultHeaders);
     builder.setHttpClientConfigCallback(
         httpClientBuilder -> {
+          JunoRestClient.configureHttpRequestHeaders(httpClientBuilder);
           String userName =
               Optional.ofNullable(System.getProperty("user"))
                   .orElseThrow(() -> new RuntimeException("user name is missing"));

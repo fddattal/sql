@@ -23,6 +23,7 @@ import org.opensearch.action.ActionRequest;
 import org.opensearch.action.ActionType;
 import org.opensearch.client.Client;
 import org.opensearch.client.node.NodeClient;
+import org.opensearch.client.support.AbstractClient;
 import org.opensearch.cluster.metadata.IndexNameExpressionResolver;
 import org.opensearch.cluster.node.DiscoveryNodes;
 import org.opensearch.cluster.service.ClusterService;
@@ -104,7 +105,7 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
   /** Settings should be inited when bootstrap the plugin. */
   private org.opensearch.sql.common.setting.Settings pluginSettings;
 
-  private NodeClient client;
+  private AbstractClient client;
   private DataSourceServiceImpl dataSourceService;
   private Injector injector;
 

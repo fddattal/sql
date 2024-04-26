@@ -193,7 +193,9 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
       NodeEnvironment nodeEnvironment,
       NamedWriteableRegistry namedWriteableRegistry,
       IndexNameExpressionResolver indexNameResolver,
-      Supplier<RepositoriesService> repositoriesServiceSupplier) {
+      Supplier<RepositoriesService> repositoriesServiceSupplier,
+      org.opensearch.sdk.Client sdkClient
+  ) {
     this.clusterService = clusterService;
     this.pluginSettings = new OpenSearchSettings(clusterService.getClusterSettings());
     this.client = (NodeClient) client;

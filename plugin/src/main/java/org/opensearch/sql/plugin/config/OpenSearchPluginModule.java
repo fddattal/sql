@@ -10,6 +10,7 @@ import org.opensearch.client.node.NodeClient;
 import org.opensearch.common.inject.AbstractModule;
 import org.opensearch.common.inject.Provides;
 import org.opensearch.common.inject.Singleton;
+import org.opensearch.sdk.Client;
 import org.opensearch.sql.analysis.Analyzer;
 import org.opensearch.sql.analysis.ExpressionAnalyzer;
 import org.opensearch.sql.common.setting.Settings;
@@ -23,6 +24,7 @@ import org.opensearch.sql.expression.function.BuiltinFunctionRepository;
 import org.opensearch.sql.monitor.ResourceMonitor;
 import org.opensearch.sql.opensearch.client.OpenSearchClient;
 import org.opensearch.sql.opensearch.client.OpenSearchNodeClient;
+import org.opensearch.sql.opensearch.client.OpenSearchSDKClient;
 import org.opensearch.sql.opensearch.executor.OpenSearchExecutionEngine;
 import org.opensearch.sql.opensearch.executor.OpenSearchQueryManager;
 import org.opensearch.sql.opensearch.executor.protector.ExecutionProtector;
@@ -48,8 +50,9 @@ public class OpenSearchPluginModule extends AbstractModule {
   protected void configure() {}
 
   @Provides
-  public OpenSearchClient openSearchClient(NodeClient nodeClient) {
+  public OpenSearchClient openSearchClient(NodeClient nodeClient, Client client) {
     return new OpenSearchNodeClient(nodeClient);
+//    return new OpenSearchSDKClient(client);
   }
 
   @Provides

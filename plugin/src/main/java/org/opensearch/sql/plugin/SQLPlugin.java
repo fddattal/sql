@@ -204,6 +204,10 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
     LocalClusterState.state().setClusterService(clusterService);
     LocalClusterState.state().setPluginSettings((OpenSearchSettings) pluginSettings);
     ModulesBuilder modules = new ModulesBuilder();
+    modules.add(
+        b -> {
+          b.bind(org.opensearch.sdk.Client.class).toInstance(sdkClient);
+        });
     modules.add(new OpenSearchPluginModule());
     modules.add(
         b -> {
@@ -211,7 +215,6 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
           b.bind(org.opensearch.sql.common.setting.Settings.class).toInstance(pluginSettings);
           b.bind(DataSourceService.class).toInstance(dataSourceService);
           b.bind(ClusterService.class).toInstance(clusterService);
-          b.bind(org.opensearch.sdk.Client.class).toInstance(sdkClient);
         });
     modules.add(new AsyncExecutorServiceModule());
     injector = modules.createInjector();

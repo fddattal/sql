@@ -60,11 +60,17 @@ public class TransportPPLQueryAction
       NodeClient client,
       ClusterService clusterService,
       DataSourceServiceImpl dataSourceService,
-      org.opensearch.common.settings.Settings clusterSettings) {
+      org.opensearch.common.settings.Settings clusterSettings,
+      org.opensearch.sdk.Client sdkClient
+  ) {
     super(PPLQueryAction.NAME, transportService, actionFilters, TransportPPLQueryRequest::new);
 
     ModulesBuilder modules = new ModulesBuilder();
     modules.add(new OpenSearchPluginModule());
+    modules.add(
+        b -> {
+          b.bind(org.opensearch.sdk.Client.class).toInstance(sdkClient);
+        });
     modules.add(
         b -> {
           b.bind(NodeClient.class).toInstance(client);

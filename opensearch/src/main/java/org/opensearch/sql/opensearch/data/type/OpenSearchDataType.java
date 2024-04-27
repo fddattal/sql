@@ -10,10 +10,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import org.apache.commons.lang3.EnumUtils;
+import org.opensearch.sdk.model.Data;
 import org.opensearch.sql.data.type.ExprCoreType;
 import org.opensearch.sql.data.type.ExprType;
 
@@ -92,6 +94,33 @@ public class OpenSearchDataType implements ExprType, Serializable {
         .forEach(t -> instances.put(t.toString(), OpenSearchDataType.of(t)));
   }
 
+  public static Map<String, OpenSearchDataType> parseMapping(Data indexMapping) {
+    Map<String, OpenSearchDataType> result = new LinkedHashMap<>();
+
+    if (indexMapping == null || indexMapping.getMap() == null) {
+      return result;
+    }
+
+    indexMapping.getMap().forEach(
+            (k, v) -> {
+              var innerMap = Objects.requireNonNull(v.getMap());
+              // by default, the type is treated as an Object if "type" is not provided
+              var type = innerMap.getOrDefault("type", Data.string("object")).getString().replace("_", "");
+              if (!EnumUtils.isValidEnumIgnoreCase(OpenSearchDataType.MappingType.class, type)) {
+                // unknown type, e.g. `alias`
+                // TODO resolve alias reference
+                return;
+              }
+              // create OpenSearchDataType
+              result.put(
+                      k,
+                      OpenSearchDataType.of(
+                              EnumUtils.getEnumIgnoreCase(OpenSearchDataType.MappingType.class, type),
+                              v));
+            });
+    return result;
+  }
+
   /**
    * Parses index mapping and maps it to a Data type in the SQL plugin.
    *
@@ -162,6 +191,42 @@ public class OpenSearchDataType implements ExprType, Serializable {
       case DateNanos:
         // Default date formatter is used when "" is passed as the second parameter
         String format = (String) innerMap.getOrDefault("format", "");
+        return OpenSearchDateType.of(format);
+      default:
+        return res;
+    }
+  }
+
+    public static OpenSearchDataType of(MappingType mappingType, Data innerMap) {
+    OpenSearchDataType res =
+        instances.getOrDefault(mappingType.toString(), new OpenSearchDataType(mappingType));
+    switch (mappingType) {
+      case Object:
+        // TODO: use Object type once it has been added
+      case Nested:
+        if (innerMap.getMap().isEmpty()) {
+          return res;
+        }
+        Map<String, OpenSearchDataType> properties =
+            parseMapping(innerMap.getMap().getOrDefault("properties", Data.map(Map.of())));
+        OpenSearchDataType objectDataType = res.cloneEmpty();
+        objectDataType.properties = properties;
+        return objectDataType;
+      case Text:
+        // TODO update these 2 below #1038 https://github.com/opensearch-project/sql/issues/1038
+        Map<String, OpenSearchDataType> fields =
+            parseMapping(innerMap.getMap().getOrDefault("fields", Data.map(Map.of())));
+        return (!fields.isEmpty()) ? OpenSearchTextType.of(fields) : OpenSearchTextType.of();
+      case GeoPoint:
+        return OpenSearchGeoPointType.of();
+      case Binary:
+        return OpenSearchBinaryType.of();
+      case Ip:
+        return OpenSearchIpType.of();
+      case Date:
+      case DateNanos:
+        // Default date formatter is used when "" is passed as the second parameter
+        String format = innerMap.getMap().getOrDefault("format", Data.string("")).getString();
         return OpenSearchDateType.of(format);
       default:
         return res;

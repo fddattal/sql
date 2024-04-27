@@ -51,8 +51,8 @@ public class OpenSearchPluginModule extends AbstractModule {
 
   @Provides
   public OpenSearchClient openSearchClient(NodeClient nodeClient, Client client) {
-    return new OpenSearchNodeClient(nodeClient);
-//    return new OpenSearchSDKClient(client);
+//    return new OpenSearchNodeClient(nodeClient);
+    return new OpenSearchSDKClient(client);
   }
 
   @Provides

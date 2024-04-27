@@ -65,6 +65,7 @@ import org.opensearch.sql.legacy.metrics.Metrics;
 import org.opensearch.sql.legacy.plugin.RestSqlAction;
 import org.opensearch.sql.legacy.plugin.RestSqlStatsAction;
 import org.opensearch.sql.opensearch.client.OpenSearchNodeClient;
+import org.opensearch.sql.opensearch.client.OpenSearchSDKClient;
 import org.opensearch.sql.opensearch.setting.LegacyOpenDistroSettings;
 import org.opensearch.sql.opensearch.setting.OpenSearchSettings;
 import org.opensearch.sql.opensearch.storage.OpenSearchDataSourceFactory;
@@ -105,6 +106,7 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
   private org.opensearch.sql.common.setting.Settings pluginSettings;
 
   private NodeClient client;
+  private org.opensearch.sdk.Client sdkClient;
   private DataSourceServiceImpl dataSourceService;
   private Injector injector;
 
@@ -199,6 +201,7 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
     this.clusterService = clusterService;
     this.pluginSettings = new OpenSearchSettings(clusterService.getClusterSettings());
     this.client = (NodeClient) client;
+    this.sdkClient = sdkClient;
     this.dataSourceService = createDataSourceService();
     dataSourceService.createDataSource(defaultOpenSearchDataSourceMetadata());
     LocalClusterState.state().setClusterService(clusterService);
@@ -281,7 +284,9 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
         new ImmutableSet.Builder<DataSourceFactory>()
             .add(
                 new OpenSearchDataSourceFactory(
-                    new OpenSearchNodeClient(this.client), pluginSettings))
+//                    new OpenSearchNodeClient(this.client)
+                        new OpenSearchSDKClient(this.sdkClient)
+                        , pluginSettings))
             .add(new PrometheusStorageFactory(pluginSettings))
             .add(new SparkStorageFactory(this.client, pluginSettings))
             .add(new GlueDataSourceFactory(pluginSettings))

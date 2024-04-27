@@ -9,6 +9,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.ToString;
 import org.opensearch.cluster.metadata.MappingMetadata;
+import org.opensearch.sdk.model.Data;
 import org.opensearch.sql.opensearch.data.type.OpenSearchDataType;
 
 /**
@@ -31,6 +32,10 @@ public class IndexMapping {
     this.fieldMappings =
         OpenSearchDataType.parseMapping(
             (Map<String, Object>) metaData.getSourceAsMap().getOrDefault("properties", null));
+  }
+
+  public IndexMapping(org.opensearch.sdk.model.MappingMetadata mappingMetadata) {
+    this.fieldMappings = OpenSearchDataType.parseMapping(mappingMetadata.getSource().getMap().get("properties"));
   }
 
   /**

@@ -81,7 +81,8 @@ import java.util.stream.Collectors;
  */
 public class JunoRestClient extends RestClient implements Closeable {
 
-    private static final String COLLECTION_ENDPOINT = "https://ruh7jos10anqd6bsp844.beta-us-east-1.aoss.amazonaws.com";
+    private static final String COLLECTION_HOST = "ruh7jos10anqd6bsp844.beta-us-east-1.aoss.amazonaws.com";
+    private static final String COLLECTION_ENDPOINT = "https://" + COLLECTION_HOST;
     private static final String REGION_NAME = "us-east-1";
     private static final String ACCOUNT_ID = "014904715068";
     private static final String COLLECTION_ID = "ruh7jos10anqd6bsp844";
@@ -93,6 +94,10 @@ public class JunoRestClient extends RestClient implements Closeable {
     private static final Map<ApiId, ApiHandler> API_HANDLERS = Map.ofEntries(
             // not actually supported, opensearch test framework is calling this so for now we will bypass
             Map.entry(new ApiId("GET", Pattern.compile("^.*_nodes/plugins.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callLocal),
             Map.entry(new ApiId("POST", Pattern.compile("^.*_search.*$")), JunoRestClient::callLocal),
             Map.entry(new ApiId("GET", Pattern.compile("^.*_search.*$")), JunoRestClient::callLocal),
             Map.entry(new ApiId("GET", Pattern.compile("^/_cat/indices.*$")), JunoRestClient::callRemote),
@@ -145,8 +150,7 @@ public class JunoRestClient extends RestClient implements Closeable {
 
     @Override
     public List<Node> getNodes() {
-        notSupported("getNodes()");
-        return null;
+        return List.of(new Node(new HttpHost(COLLECTION_HOST, 433, "https")));
     }
 
     @Override

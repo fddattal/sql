@@ -105,7 +105,7 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
   /** Settings should be inited when bootstrap the plugin. */
   private org.opensearch.sql.common.setting.Settings pluginSettings;
 
-  private AbstractClient client;
+  private NodeClient client;
   private DataSourceServiceImpl dataSourceService;
   private Injector injector;
 

@@ -52,9 +52,10 @@ public class IdentifierIT extends SQLIntegTestCase {
   @Test
   public void testSpecialFieldName() throws IOException {
     swallowResourceAlreadyExists(null, () -> {
-      new Index("test").addDoc("{\"@timestamp\": 10, \"dimensions:major_version\": 30}", "1");
+      new Index("test");
       return null;
     });
+    Index.addDocHelper("test", "{\"@timestamp\": 10, \"dimensions:major_version\": 30}", "1");
     final JSONObject result =
         new JSONObject(
             executeQuery("SELECT @timestamp, " + "`dimensions:major_version` FROM test", "jdbc"));
@@ -76,9 +77,11 @@ public class IdentifierIT extends SQLIntegTestCase {
   @Test
   public void testDoubleUnderscoreIdentifierTest() throws IOException {
     swallowResourceAlreadyExists(null, () -> {
-      new Index("test.twounderscores").addDoc("{\"__age\": 30}", "1");
+      new Index("test.twounderscores");
       return null;
     });
+
+    Index.addDocHelper("test.twounderscores", "{\"__age\": 30}", "1");
 
     final JSONObject result =
         new JSONObject(executeQuery("SELECT __age FROM test.twounderscores", "jdbc"));
@@ -231,12 +234,13 @@ public class IdentifierIT extends SQLIntegTestCase {
   }
 
   private void createIndexWithOneDoc(String... indexNames) throws IOException {
-    swallowResourceAlreadyExists(null, () -> {
       for (String indexName : indexNames) {
-        new Index(indexName).addDoc("{\"age\": 30}", "1");
+        swallowResourceAlreadyExists(null, () -> {
+          new Index(indexName);
+          return null;
+        });
+        Index.addDocHelper(indexName, "{\"age\": 30}", "1");
       }
-      return null;
-    });
   }
 
   private void queryAndAssertTheDoc(String sql) {
@@ -256,7 +260,10 @@ public class IdentifierIT extends SQLIntegTestCase {
       if (indexName.startsWith(".")) {
         createHiddenIndexByRestClient(client(), indexName, "");
       } else {
-        executeRequest(new Request("PUT", "/" + indexName));
+        swallowResourceAlreadyExists(null, () -> {
+          executeRequest(new Request("PUT", "/" + indexName));
+          return null;
+        });
       }
     }
 
@@ -269,11 +276,15 @@ public class IdentifierIT extends SQLIntegTestCase {
     }
 
     public Index addDoc(String doc, String id) {
+      addDocHelper(indexName, doc, id);
+      return this;
+    }
+
+    public static void addDocHelper(String indexName, String doc, String id) {
       Request indexDoc =
-          new Request("POST", String.format("/%s/_doc/%s?refresh=true", indexName, id));
+              new Request("PUT", String.format("/%s/_doc/%s?refresh=true", indexName, id));
       indexDoc.setJsonEntity(doc);
       performRequest(client(), indexDoc);
-      return this;
     }
 
     public Index addDocWithShardId(String doc, String id, String routing) {

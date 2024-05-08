@@ -164,6 +164,7 @@ public class SelectResultSet extends ResultSet {
     // Reset boolean in the case of JOIN query where multiple calls to loadFromEsState() are made
     selectAll = isSimpleQuerySelectAll(query) || isJoinQuerySelectAll(query, fieldNames);
 
+    // TODO: this needs to use new client
     GetFieldMappingsRequest request =
         new GetFieldMappingsRequest()
             .indices(indexName)

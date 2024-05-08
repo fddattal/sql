@@ -94,6 +94,17 @@ public class TestUtils {
   // since we are no longer deleting indices between tests, this helps to speed up the tests
   private static final Set<String> LOADED_INDICES = ConcurrentHashMap.newKeySet();
 
+  private static int matchAll(RestClient client, String indexName) throws IOException {
+    Request matchAllRequest = new Request("GET", "/" + indexName + "/_search");
+    Response matchAllResponse = performRequest(client, matchAllRequest);
+    JSONObject matchAllResponseJson = new JSONObject(EntityUtils.toString(matchAllResponse.getEntity()));
+    return matchAllResponseJson.getJSONObject("hits").getJSONObject("total").getNumber("value").intValue();
+  }
+
+  private static boolean indexContainsNumDocs(RestClient client, String indexName, int numDocs) throws IOException {
+    return matchAll(client, indexName) == numDocs;
+  }
+
   /**
    * Load test data set by REST client.
    *
@@ -110,18 +121,6 @@ public class TestUtils {
     Path path = Paths.get(getResourceFilePath(dataSetFilePath));
     //Request request = new Request("POST", "/" + indexName + "/_bulk?refresh=true");
     // disable refresh
-    Request request = new Request("POST", "/" + indexName + "/_bulk");
-    request.setJsonEntity(new String(Files.readAllBytes(path)));
-    Response response = performRequest(client, request);
-    Assert.assertTrue(
-            "Unexpected status code from bulk: " + response.getStatusLine(),
-            response.getStatusLine().getStatusCode() < 300 &&
-            response.getStatusLine().getStatusCode() >= 200);
-    JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
-    Assert.assertFalse(
-            "Response had errors: " + jsonObject,
-            jsonObject.getBoolean("errors")
-    );
 
     // TODO: polling here until we see all docs are returned in search
     List<String> dataSetLines = Files.readAllLines(path)
@@ -136,19 +135,33 @@ public class TestUtils {
 
     int expectedDocs = dataSetLines.size() / 2;
 
+    if (indexContainsNumDocs(client, indexName, expectedDocs)) {
+      LOADED_INDICES.add(indexName);
+      return;
+    }
+
+    Request request = new Request("POST", "/" + indexName + "/_bulk");
+    request.setJsonEntity(new String(Files.readAllBytes(path)));
+    Response response = performRequest(client, request);
+    Assert.assertTrue(
+            "Unexpected status code from bulk: " + response.getStatusLine(),
+            response.getStatusLine().getStatusCode() < 300 &&
+                    response.getStatusLine().getStatusCode() >= 200);
+    JSONObject jsonObject = new JSONObject(EntityUtils.toString(response.getEntity()));
+    Assert.assertFalse(
+            "Response had errors: " + jsonObject,
+            jsonObject.getBoolean("errors")
+    );
+
     Instant end = Instant.now().plus(Duration.ofMinutes(5));
     while (Instant.now().isBefore(end)) {
-      Request matchAllRequest = new Request("GET", "/" + indexName + "/_search");
-      Response matchAllResponse = performRequest(client, matchAllRequest);
-      JSONObject matchAllResponseJson = new JSONObject(EntityUtils.toString(matchAllResponse.getEntity()));
-      int total = matchAllResponseJson.getJSONObject("hits").getJSONObject("total").getNumber("value").intValue();
-      if (total != expectedDocs) {
-        System.out.printf("Waiting for more time. Found %d docs, Need %d docs%n", total, expectedDocs);
-        try { Thread.sleep(5_000); } catch (Exception e) { throw new RuntimeException(e); }
-      } else {
+      if (indexContainsNumDocs(client, indexName, expectedDocs)) {
         LOADED_INDICES.add(indexName);
         return;
       }
+      int total = matchAll(client, indexName);
+      System.out.printf("Waiting for more time. Found %d docs, Need %d docs%n", total, expectedDocs);
+      try { Thread.sleep(5_000); } catch (Exception e) { throw new RuntimeException(e); }
     }
 
     Assert.fail("Failed to load all docs after polling for " + indexName);

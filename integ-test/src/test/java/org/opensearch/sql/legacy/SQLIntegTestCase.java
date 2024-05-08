@@ -165,11 +165,12 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
   }
 
   protected void resetQuerySizeLimit() throws IOException {
-    updateClusterSettings(
-        new ClusterSetting(
-            "transient",
-            Settings.Key.QUERY_SIZE_LIMIT.getKeyValue(),
-            DEFAULT_QUERY_SIZE_LIMIT.toString()));
+    // fddattal - commented out b/c cluster setting updates are not supported
+//    updateClusterSettings(
+//        new ClusterSetting(
+//            "transient",
+//            Settings.Key.QUERY_SIZE_LIMIT.getKeyValue(),
+//            DEFAULT_QUERY_SIZE_LIMIT.toString()));
   }
 
   protected static void wipeAllClusterSettings() throws IOException {
@@ -337,7 +338,9 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
 
   protected JSONObject executeRequest(final String requestBody) throws IOException {
 
-    return new JSONObject(executeRequest(requestBody, false));
+    JSONObject result = new JSONObject(executeRequest(requestBody, false));
+    System.out.println("Result: " + result);
+    return result;
   }
 
   protected String executeExplainRequest(final String requestBody) throws IOException {
@@ -396,8 +399,8 @@ public abstract class SQLIntegTestCase extends OpenSearchSQLRestTestCase {
   }
 
   protected static JSONObject updateClusterSettings(ClusterSetting setting) throws IOException {
-//    return updateClusterSettings(setting, client());
-    return new JSONObject();
+    return updateClusterSettings(setting, client());
+//    return new JSONObject();
   }
 
   protected static JSONObject getAllClusterSettings() throws IOException {

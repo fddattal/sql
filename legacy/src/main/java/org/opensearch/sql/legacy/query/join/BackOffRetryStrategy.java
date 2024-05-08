@@ -48,6 +48,7 @@ public class BackOffRetryStrategy {
   private BackOffRetryStrategy() {}
 
   private static boolean isMemoryHealthy() {
+
     final long freeMemory = Runtime.getRuntime().freeMemory();
     final long totalMemory = Runtime.getRuntime().totalMemory();
     final int memoryUsage =

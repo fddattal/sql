@@ -38,10 +38,10 @@ public class OpenSearchNodeClient implements OpenSearchClient {
       (anyIndex -> (anyField -> true));
 
   /** Node client provided by OpenSearch container. */
-  private final AbstractClient client;
+  private final NodeClient client;
 
   /** Constructor of OpenSearchNodeClient. */
-  public OpenSearchNodeClient(AbstractClient client) {
+  public OpenSearchNodeClient(NodeClient client) {
     this.client = client;
   }
 

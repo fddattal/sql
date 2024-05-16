@@ -31,6 +31,7 @@ plugins {
 dependencies {
     api project(':core')
     api group: 'org.opensearch', name: 'opensearch', version: "${opensearch_version}"
+    api group: 'org.opensearch.sdk', name: 'opensearch-sdk-java-api', version: "${opensearch_version}"
     implementation "io.github.resilience4j:resilience4j-retry:1.5.0"
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "${versions.jackson}"
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${versions.jackson_databind}"

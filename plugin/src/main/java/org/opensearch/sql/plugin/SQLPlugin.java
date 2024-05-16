@@ -53,6 +53,8 @@ import org.opensearch.rest.RestHandler;
 import org.opensearch.script.ScriptContext;
 import org.opensearch.script.ScriptEngine;
 import org.opensearch.script.ScriptService;
+import org.opensearch.sdk.factory.Factory;
+import org.opensearch.sdk.service.TenantProvider;
 import org.opensearch.sql.datasource.DataSourceService;
 import org.opensearch.sql.datasources.auth.DataSourceUserAuthorizationHelper;
 import org.opensearch.sql.datasources.auth.DataSourceUserAuthorizationHelperImpl;
@@ -211,6 +213,17 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
       NamedWriteableRegistry namedWriteableRegistry,
       IndexNameExpressionResolver indexNameResolver,
       Supplier<RepositoriesService> repositoriesServiceSupplier) {
+
+    Factory factory = Factory.load(getClass().getClassLoader());
+
+    TenantProvider tenantProvider = factory.newTenantProvider();
+
+    LOGGER.info("Constructed tenant provider {}", tenantProvider);
+
+    org.opensearch.sdk.service.Client sdkClient = factory.newClient(client);
+
+    LOGGER.info("Constructed sdk client: {}", sdkClient);
+
     this.clusterService = clusterService;
     this.pluginSettings = new OpenSearchSettings(clusterService.getClusterSettings());
     this.client = (NodeClient) client;

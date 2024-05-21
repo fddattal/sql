@@ -48,7 +48,11 @@ public abstract class Settings {
         "plugins.query.executionengine.spark.session_inactivity_timeout_millis"),
 
     /** Async query Settings * */
-    ASYNC_QUERY_ENABLED("plugins.query.executionengine.async_query.enabled");
+    ASYNC_QUERY_ENABLED("plugins.query.executionengine.async_query.enabled"),
+
+    /* Stateless settings */
+    STATELESS("plugins.sql.stateless")
+    ;
 
     @Getter private final String keyValue;
 

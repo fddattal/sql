@@ -18,6 +18,7 @@ import java.util.Optional;
 import lombok.SneakyThrows;
 import org.apache.lucene.search.TotalHits;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -41,10 +42,12 @@ import org.opensearch.index.engine.DocumentMissingException;
 import org.opensearch.index.engine.VersionConflictEngineException;
 import org.opensearch.search.SearchHit;
 import org.opensearch.search.SearchHits;
+import org.opensearch.sql.common.setting.Settings;
 import org.opensearch.sql.datasource.model.DataSourceMetadata;
 import org.opensearch.sql.datasource.model.DataSourceType;
 import org.opensearch.sql.datasources.encryptor.Encryptor;
 import org.opensearch.sql.datasources.exceptions.DataSourceNotFoundException;
+import org.opensearch.sql.opensearch.setting.OpenSearchSettings;
 
 @ExtendWith(MockitoExtension.class)
 public class OpenSearchDataSourceMetadataStorageTest {
@@ -59,6 +62,8 @@ public class OpenSearchDataSourceMetadataStorageTest {
 
   @Mock private Encryptor encryptor;
 
+  @Mock private OpenSearchSettings settings;
+
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   private SearchResponse searchResponse;
 
@@ -71,7 +76,14 @@ public class OpenSearchDataSourceMetadataStorageTest {
   @Mock private ActionFuture<DeleteResponse> deleteResponseActionFuture;
   @Mock private DeleteResponse deleteResponse;
   @Mock private SearchHit searchHit;
-  @InjectMocks private OpenSearchDataSourceMetadataStorage openSearchDataSourceMetadataStorage;
+  private OpenSearchDataSourceMetadataStorage openSearchDataSourceMetadataStorage;
+
+  @BeforeEach
+  public void setup() {
+    openSearchDataSourceMetadataStorage = new OpenSearchDataSourceMetadataStorage(client, clusterService, encryptor, settings);
+
+    Mockito.when(settings.getSettingValue(ArgumentMatchers.eq(Settings.Key.DATA_SOURCE_STORAGE_ENABLED))).thenReturn(true);
+  }
 
   @SneakyThrows
   @Test
@@ -88,6 +100,7 @@ public class OpenSearchDataSourceMetadataStorageTest {
     Mockito.when(searchHit.getSourceAsString()).thenReturn(getBasicDataSourceMetadataString());
     Mockito.when(encryptor.decrypt("password")).thenReturn("password");
     Mockito.when(encryptor.decrypt("username")).thenReturn("username");
+
 
     Optional<DataSourceMetadata> dataSourceMetadataOptional =
         openSearchDataSourceMetadataStorage.getDataSourceMetadata(TEST_DATASOURCE_INDEX_NAME);

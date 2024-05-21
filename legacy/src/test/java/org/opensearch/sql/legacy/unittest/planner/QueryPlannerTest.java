@@ -98,6 +98,8 @@ public abstract class QueryPlannerTest {
   public void init() {
     MockitoAnnotations.initMocks(this);
     when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
+    when(clusterSettings.get(OpenSearchSettings.STATELESS_SETTING)).thenReturn(false);
+    when(clusterSettings.get(OpenSearchSettings.DATA_SOURCE_STORAGE_ENABLED_SETTING)).thenReturn(true);
     OpenSearchSettings settings = spy(new OpenSearchSettings(clusterSettings));
 
     // Force return empty list to avoid ClusterSettings be invoked which is a final class and hard

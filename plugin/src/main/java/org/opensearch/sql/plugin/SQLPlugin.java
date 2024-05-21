@@ -274,7 +274,7 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
     }
     DataSourceMetadataStorage dataSourceMetadataStorage =
         new OpenSearchDataSourceMetadataStorage(
-            client, clusterService, new EncryptorImpl(masterKey));
+            client, clusterService, new EncryptorImpl(masterKey), (OpenSearchSettings) pluginSettings);
     DataSourceUserAuthorizationHelper dataSourceUserAuthorizationHelper =
         new DataSourceUserAuthorizationHelperImpl(client);
     return new DataSourceServiceImpl(

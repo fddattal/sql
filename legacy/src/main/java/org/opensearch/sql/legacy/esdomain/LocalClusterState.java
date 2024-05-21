@@ -18,11 +18,14 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.opensearch.action.admin.indices.mapping.get.GetMappingsResponse;
 import org.opensearch.action.support.IndicesOptions;
+import org.opensearch.client.Client;
 import org.opensearch.cluster.ClusterState;
 import org.opensearch.cluster.metadata.IndexNameExpressionResolver;
 import org.opensearch.cluster.service.ClusterService;
 import org.opensearch.common.settings.Setting;
+import org.opensearch.common.unit.TimeValue;
 import org.opensearch.index.IndexNotFoundException;
 import org.opensearch.sql.common.setting.Settings;
 import org.opensearch.sql.legacy.esdomain.mapping.IndexMappings;
@@ -57,6 +60,9 @@ public class LocalClusterState {
   /** Index name expression resolver to get concrete index name */
   private IndexNameExpressionResolver resolver;
 
+  /** Client to resolve local cluster state requests in stateless mode */
+  private Client client;
+
   /**
    * Thread-safe mapping cache to save the computation of sourceAsMap() which is not lightweight as
    * thought Array cannot be used as key because hashCode() always return reference address, so
@@ -81,6 +87,10 @@ public class LocalClusterState {
 
   public void setClusterService(ClusterService clusterService) {
     this.clusterService = clusterService;
+
+    if (getSettingValue(Settings.Key.STATELESS)) {
+      return;
+    }
 
     clusterService.addListener(
         event -> {
@@ -116,6 +126,10 @@ public class LocalClusterState {
     this.resolver = resolver;
   }
 
+  public void setClient(Client client) {
+    this.client = client;
+  }
+
   private LocalClusterState() {
     cache = CacheBuilder.newBuilder().maximumSize(100).build();
   }
@@ -134,7 +148,21 @@ public class LocalClusterState {
 
   /** Get field mappings by index expressions. All types and fields are included in response. */
   public IndexMappings getFieldMappings(String[] indices) {
+    if (getSettingValue(Settings.Key.STATELESS)) {
+      return getFieldMappingsStateless(indices);
+    }
     return getFieldMappings(indices, ALL_FIELDS);
+  }
+
+  private IndexMappings getFieldMappingsStateless(String[] indices) {
+
+    GetMappingsResponse getMappingsResponse = client.admin()
+            .indices()
+            .prepareGetMappings(indices)
+            .setLocal(true)
+            .get(TimeValue.timeValueMinutes(5));
+
+    return new IndexMappings(getMappingsResponse.getMappings());
   }
 
   /**

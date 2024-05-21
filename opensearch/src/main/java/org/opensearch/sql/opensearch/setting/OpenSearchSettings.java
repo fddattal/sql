@@ -201,6 +201,13 @@ public class OpenSearchSettings extends Settings {
           Setting.Property.NodeScope,
           Setting.Property.Dynamic);
 
+  public static final Setting<Boolean> STATELESS_SETTING =
+      Setting.boolSetting(
+          Key.STATELESS.getKeyValue(),
+          false,
+          // non-dynamic
+          Setting.Property.NodeScope);
+
   /** Construct OpenSearchSetting. The OpenSearchSetting must be singleton. */
   @SuppressWarnings("unchecked")
   public OpenSearchSettings(ClusterSettings clusterSettings) {
@@ -327,6 +334,8 @@ public class OpenSearchSettings extends Settings {
         Key.STREAMING_JOB_HOUSEKEEPER_INTERVAL,
         STREAMING_JOB_HOUSEKEEPER_INTERVAL_SETTING,
         new Updater((Key.STREAMING_JOB_HOUSEKEEPER_INTERVAL)));
+    registerNonDynamicSettings(
+            settingBuilder, clusterSettings, Key.STATELESS, STATELESS_SETTING);
     defaultSettings = settingBuilder.build();
   }
 
@@ -407,6 +416,7 @@ public class OpenSearchSettings extends Settings {
     return new ImmutableList.Builder<Setting<?>>()
         .add(DATASOURCE_MASTER_SECRET_KEY)
         .add(DATASOURCE_CONFIG)
+        .add(STATELESS_SETTING)
         .build();
   }
 

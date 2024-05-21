@@ -50,7 +50,11 @@ public abstract class Settings {
     /** Async query Settings * */
     ASYNC_QUERY_ENABLED("plugins.query.executionengine.async_query.enabled"),
     STREAMING_JOB_HOUSEKEEPER_INTERVAL(
-        "plugins.query.executionengine.spark.streamingjobs.housekeeper.interval");
+        "plugins.query.executionengine.spark.streamingjobs.housekeeper.interval"),
+
+    /* Stateless settings */
+    STATELESS("plugins.sql.stateless")
+    ;
 
     @Getter private final String keyValue;
 

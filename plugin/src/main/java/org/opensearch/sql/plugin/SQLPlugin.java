@@ -199,8 +199,8 @@ public class SQLPlugin extends Plugin implements ActionPlugin, ScriptPlugin {
     this.client = (NodeClient) client;
     this.dataSourceService = createDataSourceService();
     dataSourceService.createDataSource(defaultOpenSearchDataSourceMetadata());
-    LocalClusterState.state().setPluginSettings((OpenSearchSettings) pluginSettings);
     LocalClusterState.state().setClusterService(clusterService);
+    LocalClusterState.state().setPluginSettings((OpenSearchSettings) pluginSettings);
     LocalClusterState.state().setClient(client);
     ModulesBuilder modules = new ModulesBuilder();
     modules.add(new OpenSearchPluginModule());

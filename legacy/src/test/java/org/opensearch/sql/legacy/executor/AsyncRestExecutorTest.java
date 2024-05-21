@@ -56,6 +56,8 @@ public class AsyncRestExecutorTest {
     when(client.threadPool()).thenReturn(mock(ThreadPool.class));
     when(action.getSqlRequest()).thenReturn(SqlRequest.NULL);
     when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
+    when(clusterSettings.get(OpenSearchSettings.STATELESS_SETTING)).thenReturn(false);
+    when(clusterSettings.get(OpenSearchSettings.DATA_SOURCE_STORAGE_ENABLED_SETTING)).thenReturn(true);
 
     OpenSearchSettings settings = spy(new OpenSearchSettings(clusterSettings));
     doReturn(emptyList()).when(settings).getSettings();

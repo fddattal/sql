@@ -12,6 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.AdditionalMatchers.not;
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
 import static org.opensearch.common.unit.TimeValue.timeValueMinutes;
 import static org.opensearch.sql.opensearch.setting.LegacyOpenDistroSettings.legacySettings;
@@ -26,10 +27,10 @@ import static org.opensearch.sql.opensearch.setting.OpenSearchSettings.SQL_ENABL
 import static org.opensearch.sql.opensearch.setting.OpenSearchSettings.SQL_SLOWLOG_SETTING;
 
 import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.Mockito;
 import org.opensearch.cluster.ClusterName;
 import org.opensearch.common.settings.ClusterSettings;
 import org.opensearch.common.settings.Setting;
@@ -38,15 +39,20 @@ import org.opensearch.monitor.jvm.JvmInfo;
 import org.opensearch.sql.common.setting.LegacySettings;
 import org.opensearch.sql.common.setting.Settings;
 
-@ExtendWith(MockitoExtension.class)
 class OpenSearchSettingsTest {
 
-  @Mock private ClusterSettings clusterSettings;
+  private ClusterSettings clusterSettings;
+
+  @BeforeEach
+  public void setup() {
+    clusterSettings = Mockito.mock(ClusterSettings.class);
+    doReturn(ClusterName.DEFAULT).when(clusterSettings).get(eq(ClusterName.CLUSTER_NAME_SETTING));
+    doReturn(Boolean.FALSE).when(clusterSettings).get(eq(OpenSearchSettings.STATELESS_SETTING));
+    doReturn(Boolean.TRUE).when(clusterSettings).get(eq(OpenSearchSettings.DATA_SOURCE_STORAGE_ENABLED_SETTING));
+  }
 
   @Test
   void getSettingValue() {
-    when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
-    when(clusterSettings.get(not((eq(ClusterName.CLUSTER_NAME_SETTING))))).thenReturn(null);
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     ByteSizeValue sizeValue = settings.getSettingValue(Settings.Key.QUERY_MEMORY_LIMIT);
 
@@ -55,15 +61,7 @@ class OpenSearchSettingsTest {
 
   @Test
   void getSettingValueWithPresetValuesInYml() {
-    when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
-    when(clusterSettings.get((Setting<ByteSizeValue>) QUERY_MEMORY_LIMIT_SETTING))
-        .thenReturn(new ByteSizeValue(20));
-    when(clusterSettings.get(
-            not(
-                or(
-                    eq(ClusterName.CLUSTER_NAME_SETTING),
-                    eq((Setting<ByteSizeValue>) QUERY_MEMORY_LIMIT_SETTING)))))
-        .thenReturn(null);
+    doReturn(new ByteSizeValue(20)).when(clusterSettings).get(eq((Setting<ByteSizeValue>) QUERY_MEMORY_LIMIT_SETTING));
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     ByteSizeValue sizeValue = settings.getSettingValue(Settings.Key.QUERY_MEMORY_LIMIT);
     assertEquals(sizeValue, new ByteSizeValue(20));
@@ -85,16 +83,12 @@ class OpenSearchSettingsTest {
 
   @Test
   void getSettings() {
-    when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
-    when(clusterSettings.get(not((eq(ClusterName.CLUSTER_NAME_SETTING))))).thenReturn(null);
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     assertFalse(settings.getSettings().isEmpty());
   }
 
   @Test
   void update() {
-    when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
-    when(clusterSettings.get(not((eq(ClusterName.CLUSTER_NAME_SETTING))))).thenReturn(null);
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     ByteSizeValue oldValue = settings.getSettingValue(Settings.Key.QUERY_MEMORY_LIMIT);
     OpenSearchSettings.Updater updater = settings.new Updater(Settings.Key.QUERY_MEMORY_LIMIT);
@@ -107,8 +101,6 @@ class OpenSearchSettingsTest {
 
   @Test
   void settingsFallback() {
-    when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
-    when(clusterSettings.get(not((eq(ClusterName.CLUSTER_NAME_SETTING))))).thenReturn(null);
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     assertEquals(
         settings.getSettingValue(Settings.Key.SQL_ENABLED),

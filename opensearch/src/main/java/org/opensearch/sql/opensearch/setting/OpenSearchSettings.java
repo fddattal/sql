@@ -200,6 +200,13 @@ public class OpenSearchSettings extends Settings {
           // non-dynamic
           Setting.Property.NodeScope);
 
+  public static final Setting<Boolean> DATA_SOURCE_STORAGE_ENABLED_SETTING =
+          Setting.boolSetting(
+                  Key.DATA_SOURCE_STORAGE_ENABLED.getKeyValue(),
+                  true,
+                  // non-dynamic
+                  Setting.Property.NodeScope);
+
   /** Construct OpenSearchSetting. The OpenSearchSetting must be singleton. */
   @SuppressWarnings("unchecked")
   public OpenSearchSettings(ClusterSettings clusterSettings) {
@@ -322,6 +329,8 @@ public class OpenSearchSettings extends Settings {
         new Updater((Key.SESSION_INACTIVITY_TIMEOUT_MILLIS)));
     registerNonDynamicSettings(
             settingBuilder, clusterSettings, Key.STATELESS, STATELESS_SETTING);
+    registerNonDynamicSettings(
+        settingBuilder, clusterSettings, Key.DATA_SOURCE_STORAGE_ENABLED, DATA_SOURCE_STORAGE_ENABLED_SETTING);
     defaultSettings = settingBuilder.build();
   }
 
@@ -402,6 +411,7 @@ public class OpenSearchSettings extends Settings {
         .add(DATASOURCE_MASTER_SECRET_KEY)
         .add(DATASOURCE_CONFIG)
         .add(STATELESS_SETTING)
+        .add(DATA_SOURCE_STORAGE_ENABLED_SETTING)
         .build();
   }
 

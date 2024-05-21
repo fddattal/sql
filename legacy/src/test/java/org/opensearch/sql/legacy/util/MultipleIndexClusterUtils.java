@@ -151,9 +151,9 @@ public class MultipleIndexClusterUtils {
   }
 
   public static void mockLocalClusterState(Map<String, Map<String, MappingMetadata>> indexMapping) {
+    LocalClusterState.state().setPluginSettings(mockPluginSettings());
     LocalClusterState.state().setClusterService(mockClusterService(indexMapping));
     LocalClusterState.state().setResolver(mockIndexNameExpressionResolver());
-    LocalClusterState.state().setPluginSettings(mockPluginSettings());
   }
 
   public static ClusterService mockClusterService(

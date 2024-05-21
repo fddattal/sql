@@ -9,6 +9,7 @@ import static java.util.Collections.emptyList;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -41,6 +42,7 @@ import org.opensearch.common.xcontent.XContentType;
 import org.opensearch.core.xcontent.DeprecationHandler;
 import org.opensearch.core.xcontent.NamedXContentRegistry;
 import org.opensearch.core.xcontent.XContentParser;
+import org.opensearch.sql.common.setting.Settings;
 import org.opensearch.sql.legacy.domain.Condition;
 import org.opensearch.sql.legacy.domain.Select;
 import org.opensearch.sql.legacy.domain.Where;
@@ -214,9 +216,9 @@ public class CheckScriptContents {
   }
 
   public static void mockLocalClusterState(String mappings) {
+    LocalClusterState.state().setPluginSettings(mockPluginSettings());
     LocalClusterState.state().setClusterService(mockClusterService(mappings));
     LocalClusterState.state().setResolver(mockIndexNameExpressionResolver());
-    LocalClusterState.state().setPluginSettings(mockPluginSettings());
   }
 
   public static ClusterService mockClusterService(String mappings) {
@@ -261,6 +263,9 @@ public class CheckScriptContents {
     // to mock.
     // In this case, default value in Setting will be returned all the time.
     doReturn(emptyList()).when(settings).getSettings();
+
+    doReturn(false).when(settings).getSettingValue(eq(Settings.Key.STATELESS));
+
     return settings;
   }
 }

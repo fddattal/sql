@@ -9,6 +9,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -187,6 +188,8 @@ public class LocalClusterStateTest {
   @Test
   public void getDefaultValueForQuerySlowLog() {
     when(clusterSettings.get(ClusterName.CLUSTER_NAME_SETTING)).thenReturn(ClusterName.DEFAULT);
+    when(clusterSettings.get(OpenSearchSettings.STATELESS_SETTING)).thenReturn(false);
+    when(clusterSettings.get(OpenSearchSettings.DATA_SOURCE_STORAGE_ENABLED_SETTING)).thenReturn(true);
     OpenSearchSettings settings = new OpenSearchSettings(clusterSettings);
     assertEquals(Integer.valueOf(2), settings.getSettingValue(Settings.Key.SQL_SLOWLOG));
   }

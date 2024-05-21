@@ -51,7 +51,10 @@ public abstract class Settings {
     ASYNC_QUERY_ENABLED("plugins.query.executionengine.async_query.enabled"),
 
     /* Stateless settings */
-    STATELESS("plugins.sql.stateless")
+    STATELESS("plugins.sql.stateless"),
+
+    /* Data source storage enabled*/
+    DATA_SOURCE_STORAGE_ENABLED("plugins.sql.data_source_storage_enabled")
     ;
 
     @Getter private final String keyValue;

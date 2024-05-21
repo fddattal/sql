@@ -87,12 +87,11 @@ public class LocalClusterState {
   public void setClusterService(ClusterService clusterService) {
     this.clusterService = clusterService;
 
-    if (getSettingValue(Settings.Key.STATELESS)) {
-      return;
-    }
-
     clusterService.addListener(
         event -> {
+          if (getSettingValue(Settings.Key.STATELESS)) {
+            return;
+          }
           if (event.metadataChanged()) {
             // State in cluster service is already changed to event.state() before listener fired
             if (LOG.isDebugEnabled()) {

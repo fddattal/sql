@@ -14,6 +14,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import org.apache.logging.log4j.LogManager;
@@ -155,10 +157,12 @@ public class LocalClusterState {
   private IndexMappings getFieldMappingsStateless(String[] indices) {
 
     GetMappingsResponse getMappingsResponse = client.admin()
-            .indices()
-            .prepareGetMappings(indices)
-            .setLocal(true)
-            .get(TimeValue.timeValueMinutes(5));
+        .indices()
+        .prepareGetMappings(indices)
+        .setLocal(true)
+        .setIndicesOptions(IndicesOptions.strictExpandOpen())
+        .execute()
+        .actionGet(0);
 
     return new IndexMappings(getMappingsResponse.getMappings());
   }

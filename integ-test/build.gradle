@@ -36,6 +36,7 @@ import java.util.stream.Collectors
 plugins {
     id "de.undercouch.download" version "5.3.0"
     id 'com.diffplug.spotless' version '6.22.0'
+    id "com.github.johnrengelman.shadow"
 }
 
 apply plugin: 'opensearch.build'
@@ -877,4 +878,27 @@ task integTestRemote(type: RestIntegTestTask) {
     // TODO: this one is not working? seems it fails to initialize the client and does nothing
     exclude 'org/opensearch/sql/sql/SQLCorrectnessIT.class'
 
+}
+
+task testJar(type: Jar) {
+    archiveClassifier.set("base")
+    from(sourceSets.test.allSource)
+}
+
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
+task testShadowJar(type: ShadowJar) {
+    project.configurations.implementation.canBeResolved = true
+    project.configurations.runtimeOnly.canBeResolved = true
+    project.configurations.testImplementation.canBeResolved = true
+    project.configurations.testRuntimeOnly.canBeResolved = true
+    print(project.configurations)
+    archiveClassifier.set("shadow")
+    from(sourceSets.test.allSource)
+    configurations = [
+            project.configurations.implementation,
+            project.configurations.runtimeOnly,
+            project.configurations.testImplementation,
+            project.configurations.testRuntimeOnly,
+    ]
 }

@@ -480,6 +480,7 @@ public class PrettyFormatResponseIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void joinQuery() throws IOException {
     JSONObject response =
         executeQuery(
@@ -496,6 +497,7 @@ public class PrettyFormatResponseIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void joinQueryWithAlias() throws IOException {
     JSONObject response =
         executeQuery(
@@ -516,6 +518,7 @@ public class PrettyFormatResponseIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void joinQueryWithObjectFieldInSelect() throws IOException {
     JSONObject response =
         executeQuery(
@@ -540,6 +543,7 @@ public class PrettyFormatResponseIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void joinQuerySelectOnlyOnOneTable() throws Exception {
     JSONObject response =
         executeQuery(

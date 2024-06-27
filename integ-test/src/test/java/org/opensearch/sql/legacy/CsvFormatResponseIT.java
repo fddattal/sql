@@ -310,6 +310,7 @@ public class CsvFormatResponseIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void joinSearchResultNotNestedNotFlatNoAggs() throws Exception {
     String query =
         String.format(

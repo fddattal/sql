@@ -17,6 +17,7 @@ import java.util.Map;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -52,6 +53,7 @@ import org.opensearch.sql.storage.DataSourceFactory;
 import org.opensearch.sql.util.InternalRestHighLevelClient;
 import org.opensearch.sql.util.StandaloneModule;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class StandalonePaginationIT extends SQLIntegTestCase {
 

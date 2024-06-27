@@ -16,6 +16,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
@@ -30,6 +31,7 @@ public class MetricsIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void requestCount() throws IOException, InterruptedException {
     int beforeQueries = requestTotal();
     executeQuery(String.format(Locale.ROOT, "select age from %s", TEST_INDEX_BANK));

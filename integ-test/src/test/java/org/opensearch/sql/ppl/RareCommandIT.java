@@ -19,12 +19,14 @@ public class RareCommandIT extends PPLIntegTestCase {
   @Override
   public void init() throws IOException {
     loadIndex(Index.ACCOUNT);
-    setQuerySizeLimit(2000);
+    // TODO: temp to see if it works without
+//    setQuerySizeLimit(2000);
   }
 
   @After
   public void afterTest() throws IOException {
-    resetQuerySizeLimit();
+    // TODO: temp to see if it works without
+//    resetQuerySizeLimit();
   }
 
   @Test

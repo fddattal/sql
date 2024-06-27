@@ -91,9 +91,11 @@ public class JunoRestClient extends RestClient implements Closeable {
     private static final String INDEX_NAME_PATTERN = "(\\w|\\.|-|\\+|_|\\d)+";
     private static final String DOC_ID_PATTERN = INDEX_NAME_PATTERN;
 
-    private static final Map<ApiId, ApiHandler> API_HANDLERS = Map.ofEntries(
+    private static final List<Map.Entry<ApiId, ApiHandler>> API_HANDLERS = List.of(
             // not actually supported, opensearch test framework is calling this so for now we will bypass
             Map.entry(new ApiId("GET", Pattern.compile("^.*_nodes/plugins.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql/stats.*$")), JunoRestClient::unsupported),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl/stats.*$")), JunoRestClient::unsupported),
             Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
             Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callLocal),
             Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
@@ -166,7 +168,7 @@ public class JunoRestClient extends RestClient implements Closeable {
 
     @Override
     public Response performRequest(Request request) throws IOException {
-        for (var entry : API_HANDLERS.entrySet()) {
+        for (var entry : API_HANDLERS) {
             if (entry.getKey().getMethod().equals(request.getMethod()) && entry.getKey().getEndpoint().matcher(request.getEndpoint()).matches()) {
                 return entry.getValue().handle(this, request);
             }
@@ -230,6 +232,12 @@ public class JunoRestClient extends RestClient implements Closeable {
                         )
                 .build());
         return client.performRequestSuper(request);
+    }
+
+    private static Response unsupported(JunoRestClient client, Request request) {
+        throw new UnsupportedOperationException(
+                request.getMethod() + " : " + request.getEndpoint()
+                        + " is not supported by JunoRestClient");
     }
 
     @SneakyThrows

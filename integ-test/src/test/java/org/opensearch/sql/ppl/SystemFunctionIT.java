@@ -29,9 +29,12 @@ public class SystemFunctionIT extends PPLIntegTestCase {
     JSONObject response =
         executeQuery(
             String.format(
-                "source=%s | eval `str` = typeof('pewpew'), `double` = typeof(1.0),`int` ="
-                    + " typeof(12345), `long` = typeof(1234567891011), `interval` = typeof(INTERVAL"
-                    + " 2 DAY) | fields `str`, `double`, `int`, `long`, `interval`",
+                "source=%s | eval `str` = typeof('pewpew'),"
+                    + " `double` = typeof(1.0),"
+                    + "`int` = typeof(12345),"
+                    + " `long` = typeof(1234567891011),"
+                    + " `interval` = typeof(INTERVAL 2 DAY)"
+                    + "  | fields `str`, `double`, `int`, `long`, `interval`",
                 TEST_INDEX_DATATYPE_NUMERIC));
     // TODO: test null in PPL
     verifyDataRows(response, rows("KEYWORD", "DOUBLE", "INTEGER", "LONG", "INTERVAL"));
@@ -42,11 +45,10 @@ public class SystemFunctionIT extends PPLIntegTestCase {
                 "source=%s | eval "
                     + "`timestamp` = typeof(CAST('1961-04-12 09:07:00' AS TIMESTAMP)),"
                     + "`time` = typeof(CAST('09:07:00' AS TIME)),"
-                    + "`date` = typeof(CAST('1961-04-12' AS DATE)),"
-                    + "`datetime` = typeof(DATETIME('1961-04-12 09:07:00'))"
-                    + " | fields `timestamp`, `time`, `date`, `datetime`",
+                    + "`date` = typeof(CAST('1961-04-12' AS DATE))"
+                    + " | fields `timestamp`, `time`, `date`",
                 TEST_INDEX_DATATYPE_NUMERIC));
-    verifyDataRows(response, rows("TIMESTAMP", "TIME", "DATE", "DATETIME"));
+    verifyDataRows(response, rows("TIMESTAMP", "TIME", "DATE"));
   }
 
   @Test

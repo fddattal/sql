@@ -11,12 +11,14 @@ import static org.opensearch.sql.plugin.rest.RestQuerySettingsAction.SETTINGS_AP
 
 import java.io.IOException;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.RequestOptions;
 import org.opensearch.client.Response;
 
 /** For backward compatibility, check if legacy API endpoints are accessible. */
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class LegacyAPICompatibilityIT extends PPLIntegTestCase {
 
   @Override

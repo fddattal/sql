@@ -9,10 +9,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 
 import java.io.IOException;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.sql.common.setting.Settings;
 import org.opensearch.sql.legacy.utils.StringUtils;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class DeleteIT extends SQLIntegTestCase {
 
   @Override

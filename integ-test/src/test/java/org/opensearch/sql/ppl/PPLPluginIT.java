@@ -18,6 +18,7 @@ import java.util.Locale;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -38,7 +39,7 @@ public class PPLPluginIT extends PPLIntegTestCase {
 
   @Test
   public void testQueryEndpointShouldOK() throws IOException {
-    Request request = new Request("PUT", "/a/_doc/1?refresh=true");
+    Request request = new Request("PUT", "/a/_doc/1");
     request.setJsonEntity("{\"name\": \"hello\"}");
     client().performRequest(request);
 
@@ -64,6 +65,7 @@ public class PPLPluginIT extends PPLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void sqlEnableSettingsTest() throws IOException {
     String query =
         String.format("search source=%s firstname='Hattie' | fields firstname", TEST_INDEX_BANK);

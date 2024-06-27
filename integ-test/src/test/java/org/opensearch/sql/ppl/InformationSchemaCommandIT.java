@@ -18,12 +18,14 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
 import org.opensearch.sql.datasource.model.DataSourceMetadata;
 import org.opensearch.sql.datasource.model.DataSourceType;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class InformationSchemaCommandIT extends PPLIntegTestCase {
 
   /**
@@ -40,22 +42,22 @@ public class InformationSchemaCommandIT extends PPLIntegTestCase {
 
   @Override
   protected void init() throws InterruptedException, IOException {
-    DataSourceMetadata createDSM =
-        new DataSourceMetadata.Builder()
-            .setName("my_prometheus")
-            .setConnector(DataSourceType.PROMETHEUS)
-            .setProperties(ImmutableMap.of("prometheus.uri", "http://localhost:9090"))
-            .build();
-    Request createRequest = getCreateDataSourceRequest(createDSM);
-    Response response = client().performRequest(createRequest);
-    Assert.assertEquals(201, response.getStatusLine().getStatusCode());
+//    DataSourceMetadata createDSM =
+//        new DataSourceMetadata.Builder()
+//            .setName("my_prometheus")
+//            .setConnector(DataSourceType.PROMETHEUS)
+//            .setProperties(ImmutableMap.of("prometheus.uri", "http://localhost:9090"))
+//            .build();
+//    Request createRequest = getCreateDataSourceRequest(createDSM);
+//    Response response = client().performRequest(createRequest);
+//    Assert.assertEquals(201, response.getStatusLine().getStatusCode());
   }
 
   @After
   protected void deleteDataSourceMetadata() throws IOException {
-    Request deleteRequest = getDeleteDataSourceRequest("my_prometheus");
-    Response deleteResponse = client().performRequest(deleteRequest);
-    Assert.assertEquals(204, deleteResponse.getStatusLine().getStatusCode());
+//    Request deleteRequest = getDeleteDataSourceRequest("my_prometheus");
+//    Response deleteResponse = client().performRequest(deleteRequest);
+//    Assert.assertEquals(204, deleteResponse.getStatusLine().getStatusCode());
   }
 
   @Test

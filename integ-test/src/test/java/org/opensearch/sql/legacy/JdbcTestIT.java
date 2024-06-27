@@ -43,6 +43,7 @@ public class JdbcTestIT extends SQLIntegTestCase {
 
   // https://github.com/opensearch-project/sql/issues/537
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void testSlowQuery() throws IOException {
     // set slow log threshold = 0s
     updateClusterSettings(new ClusterSetting(PERSISTENT, "plugins.sql.slowlog", "0"));

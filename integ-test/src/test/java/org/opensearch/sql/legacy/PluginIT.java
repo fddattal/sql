@@ -12,6 +12,7 @@ import static org.opensearch.sql.legacy.TestsConstants.TEST_INDEX_ACCOUNT;
 import java.io.IOException;
 import java.util.Locale;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.RequestOptions;
@@ -21,6 +22,7 @@ import org.opensearch.sql.common.setting.Settings;
 import org.opensearch.sql.legacy.utils.StringUtils;
 import org.opensearch.sql.plugin.rest.RestQuerySettingsAction;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class PluginIT extends SQLIntegTestCase {
 
   @Override

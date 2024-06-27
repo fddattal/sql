@@ -1393,6 +1393,7 @@ public class QueryIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void queryWithDotAtStartOfIndexName() throws Exception {
     TestUtils.createHiddenIndexByRestClient(client(), ".bank", null);
     TestUtils.loadDataByRestClient(client(), ".bank", "/src/test/resources/.bank.json");
@@ -1452,6 +1453,7 @@ public class QueryIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void innerQueryTest() throws IOException {
     JSONObject response =
         executeQuery(

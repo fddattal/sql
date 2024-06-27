@@ -16,12 +16,14 @@ import static org.opensearch.sql.util.MatcherUtils.verifyDataRows;
 import java.io.IOException;
 import lombok.SneakyThrows;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.ResponseException;
 import org.opensearch.sql.ppl.PPLIntegTestCase;
 
 /** Cross Cluster Search tests to be executed with security plugin. */
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class CrossClusterSearchIT extends PPLIntegTestCase {
 
   static {

@@ -18,7 +18,7 @@ public class TopCommandIT extends PPLIntegTestCase {
   @Override
   public void init() throws IOException {
     loadIndex(Index.ACCOUNT);
-    setQuerySizeLimit(2000);
+//    setQuerySizeLimit(2000);
   }
 
   @Test

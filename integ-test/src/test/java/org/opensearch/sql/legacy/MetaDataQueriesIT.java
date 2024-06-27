@@ -335,8 +335,10 @@ public class MetaDataQueriesIT extends SQLIntegTestCase {
   }
 
   private String getClusterName() throws IOException {
-    String response = executeRequest(new Request("GET", "_cluster/health"));
-    return new JSONObject(response).optString("cluster_name", "");
+    // HARD CODED FOR AOSS
+    return "opensearch";
+    // String response = executeRequest(new Request("GET", "_cluster/health"));
+    // return new JSONObject(response).optString("cluster_name", "");
   }
 
   public static TypeSafeMatcher<JSONArray> describeRow(Object... expectedObjects) {

@@ -28,6 +28,7 @@ import org.json.JSONObject;
 import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -41,6 +42,7 @@ import org.opensearch.sql.legacy.SQLIntegTestCase;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 @ThreadLeakScope(ThreadLeakScope.Scope.NONE)
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class CursorIT extends SQLIntegTestCase {
 
   private static Connection connection;

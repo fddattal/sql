@@ -11,8 +11,10 @@ import static org.opensearch.sql.util.MatcherUtils.verifyDataRows;
 
 import java.io.IOException;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class SettingsIT extends PPLIntegTestCase {
 
   @Override

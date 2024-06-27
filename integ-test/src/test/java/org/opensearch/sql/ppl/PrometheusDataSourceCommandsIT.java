@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
@@ -41,6 +42,7 @@ import org.opensearch.sql.datasource.model.DataSourceStatus;
 import org.opensearch.sql.datasource.model.DataSourceType;
 import org.opensearch.sql.util.TestUtils;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class PrometheusDataSourceCommandsIT extends PPLIntegTestCase {
 
   /**

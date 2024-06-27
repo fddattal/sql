@@ -9,6 +9,7 @@ import static org.opensearch.sql.legacy.TestsConstants.TEST_INDEX_DOG;
 import static org.opensearch.sql.util.MatcherUtils.columnName;
 import static org.opensearch.sql.util.MatcherUtils.verifyColumn;
 import static org.opensearch.sql.util.MatcherUtils.verifyDataRows;
+import static org.opensearch.sql.util.TestUtils.swallowResourceAlreadyExists;
 
 import java.io.IOException;
 import org.json.JSONObject;
@@ -66,10 +67,16 @@ public class DescribeCommandIT extends PPLIntegTestCase {
 
   @Test
   public void testDescribeWithSpecialIndexName() throws IOException {
-    executeRequest(new Request("PUT", "/logs-2021.01.11"));
+    swallowResourceAlreadyExists(null, () -> {
+      executeRequest(new Request("PUT", "/logs-2021.01.11"));
+      return null;
+    });
     verifyDataRows(executeQuery("describe logs-2021.01.11"));
 
-    executeRequest(new Request("PUT", "/logs-7.10.0-2021.01.11"));
+    swallowResourceAlreadyExists(null, () -> {
+      executeRequest(new Request("PUT", "/logs-7.10.0-2021.01.11"));
+      return null;
+    });
     verifyDataRows(executeQuery("describe logs-7.10.0-2021.01.11"));
   }
 

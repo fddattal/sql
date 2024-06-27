@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Locale;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.RequestOptions;
@@ -20,6 +21,7 @@ import org.opensearch.client.ResponseException;
 import org.opensearch.sql.ppl.PPLIntegTestCase;
 import org.opensearch.sql.util.TestUtils;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class AsyncQueryIT extends PPLIntegTestCase {
 
   public static final String ASYNC_QUERY_ACTION_URL = "/_plugins/_async_query";

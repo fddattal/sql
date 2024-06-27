@@ -12,10 +12,12 @@ import static org.opensearch.sql.util.MatcherUtils.verifyColumn;
 import java.io.IOException;
 import org.hamcrest.Matchers;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.ResponseException;
 import org.opensearch.sql.common.setting.Settings;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class ResourceMonitorIT extends PPLIntegTestCase {
 
   @Override

@@ -11,6 +11,7 @@ import static org.opensearch.sql.util.MatcherUtils.verifyDataRows;
 import static org.opensearch.sql.util.MatcherUtils.verifySchema;
 import static org.opensearch.sql.util.TestUtils.createHiddenIndexByRestClient;
 import static org.opensearch.sql.util.TestUtils.performRequest;
+import static org.opensearch.sql.util.TestUtils.swallowResourceAlreadyExists;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -21,6 +22,7 @@ import java.util.concurrent.Callable;
 
 import lombok.SneakyThrows;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.ResponseException;
@@ -37,6 +39,7 @@ public class IdentifierIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void testSpecialIndexNames() throws IOException {
     createIndexWithOneDoc(".system", "logs-2020-01");
     queryAndAssertTheDoc("SELECT * FROM .system");
@@ -120,6 +123,7 @@ public class IdentifierIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void testMetafieldIdentifierRoutingSelectTest() throws IOException {
     // create an index, but the contents doesn't really matter
     String index = "test.routing_select";
@@ -158,6 +162,7 @@ public class IdentifierIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void testMetafieldIdentifierRoutingFilterTest() throws IOException {
     // create an index, but the contents doesn't really matter
     String index = "test.routing_filter";
@@ -282,7 +287,7 @@ public class IdentifierIT extends SQLIntegTestCase {
 
     public static void addDocHelper(String indexName, String doc, String id) {
       Request indexDoc =
-              new Request("PUT", String.format("/%s/_doc/%s?refresh=true", indexName, id));
+              new Request("PUT", String.format("/%s/_doc/%s", indexName, id));
       indexDoc.setJsonEntity(doc);
       performRequest(client(), indexDoc);
     }
@@ -297,25 +302,4 @@ public class IdentifierIT extends SQLIntegTestCase {
     }
   }
 
-  @SneakyThrows
-  private static <T> T swallowResourceAlreadyExists(T defaultIfError, Callable<T> callable) {
-    try {
-      return callable.call();
-    } catch (ResponseException e) {
-      ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
-      PrintStream stream = new PrintStream(byteStream);
-      e.printStackTrace(stream);
-      stream.flush();
-      byteStream.flush();
-      String errorAsString = byteStream.toString(StandardCharsets.UTF_8);
-      if (errorAsString.contains("resource_already_exists_exception")) {
-        // swallow the exception
-        System.out.println("Swallowing resource already exists exception: " + e);
-        return defaultIfError;
-
-      } else {
-        throw e;
-      }
-    }
-  }
 }

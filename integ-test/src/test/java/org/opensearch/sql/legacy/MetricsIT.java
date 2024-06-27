@@ -32,6 +32,7 @@ public class MetricsIT extends SQLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void requestCount() throws IOException, InterruptedException {
     multiQueries(3);
     TimeUnit.SECONDS.sleep(2L);

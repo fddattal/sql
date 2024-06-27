@@ -35,6 +35,7 @@ import org.junit.rules.ExpectedException;
 import org.opensearch.client.ResponseException;
 import org.opensearch.sql.legacy.utils.StringUtils;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class SubqueryIT extends SQLIntegTestCase {
 
   @Rule public ExpectedException exceptionRule = ExpectedException.none();

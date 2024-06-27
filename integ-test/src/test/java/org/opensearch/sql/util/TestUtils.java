@@ -11,11 +11,13 @@ import static org.junit.Assert.assertTrue;
 import static org.opensearch.sql.executor.pagination.PlanSerializer.CURSOR_PREFIX;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -26,7 +28,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
+
+import lombok.SneakyThrows;
 import org.json.JSONObject;
 import org.opensearch.action.bulk.BulkRequest;
 import org.opensearch.action.bulk.BulkResponse;
@@ -34,11 +39,34 @@ import org.opensearch.action.index.IndexRequest;
 import org.opensearch.client.Client;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
+import org.opensearch.client.ResponseException;
 import org.opensearch.client.RestClient;
 import org.opensearch.common.xcontent.XContentType;
 import org.opensearch.sql.legacy.cursor.CursorType;
 
 public class TestUtils {
+
+  @SneakyThrows
+  public static <T> T swallowResourceAlreadyExists(T defaultIfError, Callable<T> callable) {
+    try {
+      return callable.call();
+    } catch (ResponseException e) {
+      ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
+      PrintStream stream = new PrintStream(byteStream);
+      e.printStackTrace(stream);
+      stream.flush();
+      byteStream.flush();
+      String errorAsString = byteStream.toString(StandardCharsets.UTF_8);
+      if (errorAsString.contains("resource_already_exists_exception")) {
+        // swallow the exception
+        System.out.println("Swallowing resource already exists exception: " + e);
+        return defaultIfError;
+
+      } else {
+        throw e;
+      }
+    }
+  }
 
   /**
    * Create test index by REST client.

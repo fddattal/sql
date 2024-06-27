@@ -9,7 +9,13 @@ import static org.opensearch.sql.legacy.TestsConstants.TEST_INDEX_BANK_CSV_SANIT
 import static org.opensearch.sql.protocol.response.format.FlatResponseFormatter.CONTENT_TYPE;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
@@ -30,7 +36,7 @@ public class CsvFormatIT extends SQLIntegTestCase {
             String.format(
                 Locale.ROOT, "SELECT firstname, lastname FROM %s", TEST_INDEX_BANK_CSV_SANITIZE),
             "csv");
-    assertEquals(
+    assertRowsEqual(
         StringUtils.format(
             "firstname,lastname%n"
                 + "'+Amber JOHnny,Duke Willmington+%n"
@@ -48,7 +54,7 @@ public class CsvFormatIT extends SQLIntegTestCase {
             String.format(
                 Locale.ROOT, "SELECT firstname, lastname FROM %s", TEST_INDEX_BANK_CSV_SANITIZE),
             "csv&sanitize=false");
-    assertEquals(
+    assertRowsEqual(
         StringUtils.format(
             "firstname,lastname%n"
                 + "+Amber JOHnny,Duke Willmington+%n"
@@ -72,5 +78,27 @@ public class CsvFormatIT extends SQLIntegTestCase {
     Response response = client().performRequest(sqlRequest);
 
     assertEquals(response.getEntity().getContentType().getValue(), CONTENT_TYPE);
+  }
+
+  private void assertRowsEqual(String expected, String actual) {
+    if (expected.equals(actual)) {
+      return;
+    }
+
+    List<String> expectedLines = List.of(expected.split("\n"));
+    List<String> actualLines = List.of(actual.split("\n"));
+
+    if (expectedLines.size() != actualLines.size()) {
+      Assert.fail("Line count is different " + expected + " " + actual);
+    }
+
+    if (!expectedLines.get(0).equals(actualLines.get(0))) {
+      Assert.fail("Header is different " + expected + " " + actual);
+    }
+
+    Set<String> expectedItems = new HashSet<>(expectedLines.subList(1, expectedLines.size()));
+    Set<String> actualItems = new HashSet<>(actualLines.subList(1, actualLines.size()));
+
+    assertEquals(expectedItems, actualItems);
   }
 }

@@ -17,6 +17,7 @@ import static org.opensearch.sql.plugin.rest.RestQuerySettingsAction.SETTINGS_AP
 import java.io.IOException;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.RequestOptions;
@@ -25,6 +26,7 @@ import org.opensearch.sql.legacy.SQLIntegTestCase;
 import org.opensearch.sql.legacy.utils.StringUtils;
 
 /** For backward compatibility, check if legacy API endpoints are accessible. */
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class LegacyAPICompatibilityIT extends SQLIntegTestCase {
 
   @Override

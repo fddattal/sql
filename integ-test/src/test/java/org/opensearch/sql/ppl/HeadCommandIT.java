@@ -20,13 +20,13 @@ public class HeadCommandIT extends PPLIntegTestCase {
 
   @Before
   public void beforeTest() throws IOException {
-    setQuerySizeLimit(200);
+//    setQuerySizeLimit(200);
   }
 
   @After
   public void afterTest() throws IOException {
-    resetQuerySizeLimit();
-    resetMaxResultWindow(TEST_INDEX_ACCOUNT);
+//    resetQuerySizeLimit();
+//    resetMaxResultWindow(TEST_INDEX_ACCOUNT);
   }
 
   @Override
@@ -81,6 +81,7 @@ public class HeadCommandIT extends PPLIntegTestCase {
         rows("Fulton", 23));
   }
 
+  @Ignore("AOSS - Ignore Unsupported Operation")
   @Test
   public void testHeadWithNumberLargerThanMaxResultWindow() throws IOException {
     setMaxResultWindow(TEST_INDEX_ACCOUNT, 10);

@@ -13,6 +13,7 @@ import java.util.List;
 import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -21,6 +22,7 @@ import org.opensearch.sql.util.TestUtils;
 
 // This class has only one test case, because it is parametrized and takes significant time
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class PaginationBlackboxIT extends SQLIntegTestCase {
 
   private final Index index;

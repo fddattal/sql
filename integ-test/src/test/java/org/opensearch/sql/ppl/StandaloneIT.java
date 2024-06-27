@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import lombok.RequiredArgsConstructor;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.RestClient;
@@ -69,6 +70,7 @@ import org.opensearch.sql.util.ExecuteOnCallerThreadQueryManager;
  * installed actually. The client application, ex. JDBC driver, needs to initialize all components
  * itself required by ppl service.
  */
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class StandaloneIT extends PPLIntegTestCase {
 
   private PPLService pplService;

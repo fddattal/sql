@@ -14,6 +14,7 @@ import java.util.Map;
 import lombok.SneakyThrows;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -26,6 +27,7 @@ import org.opensearch.sql.legacy.TestsConstants;
  * #STATEMENT_TO_NUM_OF_PAGES} to see how these parameters are generated.
  */
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class PaginationFilterIT extends SQLIntegTestCase {
 
   /**
@@ -39,9 +41,9 @@ public class PaginationFilterIT extends SQLIntegTestCase {
               385,
           "SELECT * FROM "
                   + TestsConstants.TEST_INDEX_ACCOUNT
-                  + " WHERE match(address, 'street') AND match(city, 'Ola')",
+                  + " WHERE match(addrePaginationFallbackITss, 'street') AND match(city, 'Ola')",
               1,
-          "SELECT firstname, lastname, highlight(address) FROM "
+          "SELECT firstname, laPaginationFallbackITstname, highlight(address) FROM "
                   + TestsConstants.TEST_INDEX_ACCOUNT
                   + " WHERE match(address, 'street') AND match(state, 'OH')",
               5,

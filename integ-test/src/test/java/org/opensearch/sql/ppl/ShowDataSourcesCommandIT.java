@@ -18,12 +18,14 @@ import org.json.JSONObject;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
 import org.opensearch.sql.datasource.model.DataSourceMetadata;
 import org.opensearch.sql.datasource.model.DataSourceType;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class ShowDataSourcesCommandIT extends PPLIntegTestCase {
 
   /**

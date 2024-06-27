@@ -11,6 +11,7 @@ import static org.opensearch.sql.util.MatcherUtils.columnName;
 import static org.opensearch.sql.util.MatcherUtils.rows;
 import static org.opensearch.sql.util.MatcherUtils.verifyColumn;
 import static org.opensearch.sql.util.MatcherUtils.verifyDataRows;
+import static org.opensearch.sql.util.TestUtils.swallowResourceAlreadyExists;
 
 import java.io.IOException;
 import org.json.JSONObject;
@@ -41,10 +42,17 @@ public class SearchCommandIT extends PPLIntegTestCase {
 
   @Test
   public void testSearchCommandWithSpecialIndexName() throws IOException {
-    executeRequest(new Request("PUT", "/logs-2021.01.11"));
+    swallowResourceAlreadyExists(null, () -> {
+      executeRequest(new Request("PUT", "/logs-2021.01.11"));
+      return null;
+    });
+
     verifyDataRows(executeQuery("search source=logs-2021.01.11"));
 
-    executeRequest(new Request("PUT", "/logs-7.10.0-2021.01.11"));
+    swallowResourceAlreadyExists(null, () -> {
+      executeRequest(new Request("PUT", "/logs-7.10.0-2021.01.11"));
+      return null;
+    });
     verifyDataRows(executeQuery("search source=logs-7.10.0-2021.01.11"));
   }
 

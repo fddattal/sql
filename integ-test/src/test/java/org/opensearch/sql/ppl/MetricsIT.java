@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.concurrent.TimeUnit;
 import org.json.JSONObject;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
@@ -28,6 +29,7 @@ public class MetricsIT extends PPLIntegTestCase {
   }
 
   @Test
+  @Ignore("AOSS - Ignore Unsupported Operation")
   public void requestCount() throws IOException, InterruptedException {
     int beforeQueries = pplRequestTotal();
     multiQueries(3);

@@ -27,6 +27,7 @@ import lombok.SneakyThrows;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensearch.client.Request;
 import org.opensearch.client.Response;
@@ -35,6 +36,7 @@ import org.opensearch.sql.datasource.model.DataSourceMetadata;
 import org.opensearch.sql.datasource.model.DataSourceType;
 import org.opensearch.sql.ppl.PPLIntegTestCase;
 
+@Ignore("AOSS - Ignore Unsupported Operation")
 public class DataSourceAPIsIT extends PPLIntegTestCase {
 
   @Override

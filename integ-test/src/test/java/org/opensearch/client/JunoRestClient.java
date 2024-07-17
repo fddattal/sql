@@ -81,7 +81,7 @@ import java.util.stream.Collectors;
  */
 public class JunoRestClient extends RestClient implements Closeable {
 
-    private static final String COLLECTION_HOST = "ruh7jos10anqd6bsp844.beta-us-east-1.aoss.amazonaws.com";
+    public static final String COLLECTION_HOST = "ruh7jos10anqd6bsp844.beta-us-east-1.aoss.amazonaws.com";
     private static final String COLLECTION_ENDPOINT = "https://" + COLLECTION_HOST;
     private static final String REGION_NAME = "us-east-1";
     private static final String ACCOUNT_ID = "014904715068";
@@ -93,15 +93,15 @@ public class JunoRestClient extends RestClient implements Closeable {
 
     private static final List<Map.Entry<ApiId, ApiHandler>> API_HANDLERS = List.of(
             // not actually supported, opensearch test framework is calling this so for now we will bypass
-            Map.entry(new ApiId("GET", Pattern.compile("^.*_nodes/plugins.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_nodes/plugins.*$")), JunoRestClient::callRemote),
             Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql/stats.*$")), JunoRestClient::unsupported),
             Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl/stats.*$")), JunoRestClient::unsupported),
-            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
-            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callLocal),
-            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callLocal),
-            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callLocal),
-            Map.entry(new ApiId("POST", Pattern.compile("^.*_search.*$")), JunoRestClient::callLocal),
-            Map.entry(new ApiId("GET", Pattern.compile("^.*_search.*$")), JunoRestClient::callLocal),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callRemote),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callRemote),
+            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_sql.*$")), JunoRestClient::callRemote),
+            Map.entry(new ApiId("POST", Pattern.compile("^.*_plugins/_ppl.*$")), JunoRestClient::callRemote),
+            Map.entry(new ApiId("POST", Pattern.compile("^.*_search.*$")), JunoRestClient::callRemote),
+            Map.entry(new ApiId("GET", Pattern.compile("^.*_search.*$")), JunoRestClient::callRemote),
             Map.entry(new ApiId("GET", Pattern.compile("^/_cat/indices.*$")), JunoRestClient::callRemote),
             Map.entry(new ApiId("GET", Pattern.compile("^/_cat/indices.*$")), JunoRestClient::callRemote),
             Map.entry(new ApiId("HEAD", Pattern.compile("^/" + INDEX_NAME_PATTERN + "$")), JunoRestClient::callRemote),

@@ -7,6 +7,7 @@ package org.opensearch.sql.legacy;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyManagementException;
@@ -16,6 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.*;
 
+import lombok.SneakyThrows;
 import org.apache.http.Header;
 import org.apache.http.HttpHost;
 import org.apache.http.auth.AuthScope;
@@ -33,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.opensearch.client.*;
 import org.opensearch.common.io.PathUtils;
 import org.opensearch.common.settings.Settings;
@@ -130,6 +133,33 @@ public abstract class OpenSearchSQLRestTestCase extends OpenSearchRestTestCase {
   protected static RestClient remoteAdminClient() {
     return remoteAdminClient;
   }
+
+  @SneakyThrows
+  @Before
+  public void initJunoClient() {
+    if (remoteClient() instanceof JunoRestClient) {
+      logger.info("Noop juno client");
+      return;
+    }
+
+    logger.info("Initializing juno client");
+
+    JunoRestClientBuilder builder = JunoRestClient.junoBuilder(new HttpHost(JunoRestClient.COLLECTION_HOST));
+    configureHttpsClient(builder, Settings.EMPTY);
+    RestClient restClient = builder.build();
+
+    set(OpenSearchSQLRestTestCase.class.getDeclaredField("remoteClient"), restClient);
+    set(OpenSearchSQLRestTestCase.class.getDeclaredField("remoteAdminClient"), restClient);
+    set(OpenSearchRestTestCase.class.getDeclaredField("client"), restClient);
+    set(OpenSearchRestTestCase.class.getDeclaredField("adminClient"), restClient);
+  }
+
+ @SneakyThrows
+  private static void set(Field field, Object value) {
+      field.setAccessible(true);
+      field.set(null, value);
+  }
+
 
   protected RestClient buildClient(Settings settings, HttpHost[] hosts) throws IOException {
     JunoRestClientBuilder builder = JunoRestClient.junoBuilder(hosts);
